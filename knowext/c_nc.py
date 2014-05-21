@@ -4,6 +4,8 @@ from nltk.tag.simplify import simplify_wsj_tag
 from nltk.util import ngrams
 
 MULTI_TERM_PARSER = nltk.RegexpParser('CHUNK: {<N|ADJ>*<N>}')
+RESOURCES = ['tokenizers/punkt/english.pickle',
+             'taggers/maxent_treebank_pos_tagger/english.pickle']
 
 
 def find_multi_word_terms(pos_tags):
@@ -36,9 +38,28 @@ def c_value(ngram, corpus, max_n):
     return 0
 
 
-# download nltk resources for tokenization
-nltk.data.load('tokenizers/punkt/english.pickle')
-nltk.data.load('taggers/maxent_treebank_pos_tagger/english.pickle')
+def setup_nltk_resources(resource_urls=RESOURCES):
+    """ Checks weather reasources like tokenizers are
+    installed and installs them if not.
+
+    Param:
+        resource_urls: list of strings, containing
+                       NLTK Resource URLs like:
+                            'tokenizers/punkt.zip'
+    """
+
+    if not list == type(resource_urls):
+        raise ValueError("resource_urls must contain a list.")
+
+    for res in resource_urls:
+        try:
+            nltk.data.find(res)
+        except LookupError:
+            print "Package {} not found. Downloading.".format(res)
+            nltk.data.load(res)
+
+
+setup_nltk_resources()
 
 # read and tokenize text
 f = open('corpora/easy', 'r')
