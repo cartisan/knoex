@@ -1,1 +1,1 @@
-wikipedia== 
+wikipedia==1.2.1

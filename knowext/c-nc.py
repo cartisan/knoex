@@ -1,4 +1,3 @@
-import pdb
 from math import log
 import nltk
 from nltk.tag.simplify import simplify_wsj_tag
