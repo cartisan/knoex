@@ -19,7 +19,13 @@ $1.4
 A zebra is an animal. A zebra is a mammal. A zebra an organism.
 
 $1.5 # adjective
-A python is a large snake. A crocodile is a dangerous animal. A
+A python is a large snake. A crocodile is a dangerous animal.
+
+$1.6 # such_as
+A Python, such as the Green Tree Python, is a snakes.
+
+$1.7
+The Indian Python looks like the Burmese Python. The Green Tree Python is a species of python.
 
 ###  MERONYM  ###
 $2.0 # have/has
@@ -30,8 +36,16 @@ A hand is part of a human. A finger is part of a hand. A nail is part of a finge
 
 ###  SYNONYM  ###
 $3.0
+Morelia viridis and Green Tree Python are the same thing.
 
+$3.1
+Morelia viridis is the latin name for the green tree python.
 
 ###  PROPERTIES  ###
 $4.0
 A python is green. A python is large.
+
+
+### HOMONYM ###
+$5.0
+Python is a snake as well as a programming language.

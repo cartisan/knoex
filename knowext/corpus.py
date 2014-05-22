@@ -8,11 +8,11 @@ class CorpusReader(dict) :
 
     def __init__(self,path='corpora/simple.corp'):
         data = open(path).read() + "\n"
-        d = self.get_dict(data)
+        d = self.__get_dict(data)
         super(CorpusReader, self).__init__(d)
         self.__dict__=self
 
-    def get_dict(self,data):
+    def __get_dict(self,data):
         data = re.sub( r'#.*?\n' ,"" ,data) #remove comments
         matches = re.findall(r'\$(\d+\.\d+)([^\$]*)',data) # constructs a list of tuples of text between $-symboles and its corresponding number 
         matches = dict(matches)
@@ -22,15 +22,18 @@ class CorpusReader(dict) :
     def get_corpus(self,paragraphs='*'):
         if paragraphs == '*':
             paragraphs = self.keys()
-        l = [self[x] for x in paragraphs if self[x]!='']
+        elif type(paragraphs) in [float,int]:
+            paragraphs = [paragraphs]
+        
+        l = [self[x] for x in paragraphs if self[x]!=''] # <<< exception handling ?
         l = string.join(l,'\n')
         return l
 
 
 # get text from any wikipedia article (default: summary of random simple english wikipedia article)
 def get_wiki_text(name=None, lang='simple', summary=True, silent=False):
+    wiki.set_lang(lang)
     try :
-        wiki.set_lang(lang)
         if not name :
             name = wiki.random()
             if not silent :
