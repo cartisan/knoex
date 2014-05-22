@@ -1,4 +1,3 @@
-import pdb
 from math import log
 import nltk
 from preprocessor import pos_tag
@@ -29,6 +28,18 @@ class C_NC_TermExtractor(object):
         for ngram in candidates:
             self._compute_c_value(ngram, max_len)
 
+        self.c_values.sort(key=lambda x: x[0], reverse=True)
+
+        # compute weight
+        max_value, max_ngrams = self.c_values[0]
+        max_ngrams = [max_ngrams]
+        for i in range(1, len(self.c_values)):
+            if self.c_values[i][0] < max_value:
+                break
+            max_ngrams.append(self.c_values[i][1])
+
+        # TODO: compute context of max_ngrams
+
         # nc-values
         pass
 
@@ -57,7 +68,7 @@ class C_NC_TermExtractor(object):
 
         Param:
             ngram: list of tuples of form (word, pos-tag)
-        Returns:
+        Return:
             a string containing all words from the ngram seperated by spaces
         """
 
@@ -84,8 +95,10 @@ class C_NC_TermExtractor(object):
 
 
 f = open('corpora/easy', 'r')
+#f = open('corpora/snakes', 'r')
 text = f.read()
 f.close()
 extractor = C_NC_TermExtractor(text)
 extractor.compute_cnc()
-print extractor.c_values
+import pprint
+pprint.pprint(extractor.c_values)
