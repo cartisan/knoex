@@ -1,4 +1,3 @@
-import pdb
 from math import log
 from collections import defaultdict
 import operator
@@ -55,7 +54,6 @@ class C_NC_TermExtractor(object):
 
         no_terms = float(len(max_ngrams))
         for token, counts in self.context_words.items():
-            pdb.set_trace() ############################## Breakpoint ##############################
             corpus_count = self.corpus.count(
                 self.text_from_tagged_ngram(token))
             self.weights[token] = 0.5 * (counts[1]/no_terms +
