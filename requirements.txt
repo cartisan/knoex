@@ -1,1 +1,2 @@
 wikipedia==1.2.1
+nltk==2.0.4
