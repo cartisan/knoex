@@ -1,4 +1,5 @@
-from nltk.data import load, find
+from nltk.data import  find
+from nltk import download
 
 
 def setup_nltk_resources(resource_urls):
@@ -10,7 +11,7 @@ def setup_nltk_resources(resource_urls):
                        NLTK Resource URLs like:
                             'tokenizers/punkt.zip'
     """
-
+	
     if not list == type(resource_urls):
         raise ValueError("resource_urls must contain a list.")
 
@@ -19,4 +20,4 @@ def setup_nltk_resources(resource_urls):
             find(res)
         except LookupError:
             print "Package {} not found. Downloading.".format(res)
-            load(res)
+            download(res)

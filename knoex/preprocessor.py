@@ -19,8 +19,8 @@ def pos_tag(text, simple=False):
     """
 
     # check availability of nltk resources for pos-tagging
-    resources = ['tokenizers/punkt/english.pickle',
-                 'taggers/maxent_treebank_pos_tagger/english.pickle']
+    resources = ['punkt',
+                 'maxent_treebank_pos_tagger']
     setup_nltk_resources(resources)
 
     # tokenize to sentences, then to tokens
