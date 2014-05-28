@@ -70,4 +70,3 @@ for s in tagged_sentences:
 	print manipulated_s
 	print noun_dict
 	print
-
