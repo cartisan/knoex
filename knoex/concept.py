@@ -12,9 +12,13 @@ class concept(object):
 
 
 	def add_relation(self,concept,relation):
-
+		pass
 				
 
-		
+	def get_hypernyms(self):
+		return self.hypernyms
+
+	def get_hyponyms(self):
+		return self.hyponyms	
 
 	
