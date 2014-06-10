@@ -15,7 +15,9 @@ class C_NC_TermExtractor(object):
     def __init__(self, text):
         self.corpus = text.lower()
         self.pos_tags = pos_tag(text, True)
-        self.c_values = []
+        self.word_count = len(self.pos_tags)
+        self.c_values = []  # form [(c-value, ngram)]
+        self.nc_values = []  # form: [(ngram, nc-value)]
         self.candidate_cache = []
         self.context_words = defaultdict(lambda: [0, 0])
         self.conc_index = nltk.ConcordanceIndex(self.pos_tags)
@@ -56,7 +58,7 @@ class C_NC_TermExtractor(object):
                 self.context_words[word][0] += count
 
             # increment number of ngrams the context appeared in
-            for token in set(context):
+            for token in context.keys():
                 self.context_words[token][1] += 1
 
         #compute weights
@@ -67,13 +69,17 @@ class C_NC_TermExtractor(object):
             self.weights[token] = 0.5 * (counts[1]/no_terms +
                                          counts[0]/corpus_count)
 
-        #rearrange c_value list
-        for value, ngram in self.c_values:
-            for context_tuple, count in self.extract_context(ngram):
-                pass
+        # compute nc_value for each candidate
+        for c, ngram in self.c_values:
+            #accumulate weight for ngram using it's context
+            wei = 0
+            for word in self.extract_context(ngram).keys():
+                wei += (self.weights[word]+1)
+            nc = 1/log(self.word_count) * c * wei
+            self.nc_values.append((ngram, nc))
 
-        # nc-values
-        pass
+        self.nc_values.sort(key=lambda x: x[1], reverse=True)
+        #TODO: Decide which terms to return
 
     def extract_context(self, ngram):
         """ Takes an ngram and retrieves the context for all
@@ -122,7 +128,7 @@ class C_NC_TermExtractor(object):
         context = defaultdict(lambda: 0)
         for occurrance in offsets:
             if (occurrance[0] - 1 >= 0 and
-            occurrance[-1] + 1 <= len(self.pos_tags)):
+                    occurrance[-1] + 1 <= self.word_count):
                 pre = self.pos_tags[occurrance[0]-1]
                 post = self.pos_tags[occurrance[-1]+1]
                 for token in [pre, post]:
@@ -200,11 +206,15 @@ class C_NC_TermExtractor(object):
         self.c_values.append((c_value, ngram))
 
 
-f = open('corpora/easy', 'r')
-#f = open('corpora/snakes', 'r')
-text = f.read()
-f.close()
-extractor = C_NC_TermExtractor(text)
-extractor.compute_cnc()
-import pprint
-pprint.pprint(extractor.__dict__)
+def test_execution():
+    """ Method loads a sample corpus, executes the extraction
+        and prints the state of the etractor for inspection.
+    """
+    f = open('corpora/easy', 'r')
+    #f = open('corpora/snakes', 'r')
+    text = f.read()
+    f.close()
+    extractor = C_NC_TermExtractor(text)
+    extractor.compute_cnc()
+    import pprint
+    pprint.pprint(extractor.__dict__)
