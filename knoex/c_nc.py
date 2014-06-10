@@ -158,8 +158,15 @@ class C_NC_TermExtractor(object):
     def find_multi_word_terms(self):
         def _candidate_words(pos_tags):
             tree = MULTI_TERM_PARSER.parse(pos_tags)
-            return [frozenset(subtree.leaves()) for subtree in tree.subtrees()
-                    if subtree.node == "CHUNK"]
+
+            candidates = []
+            for subtree in tree.subtrees():
+                if subtree.node == "CHUNK":
+                    cand = subtree.leaves()
+                    if not cand in candidates:
+                        candidates.append(cand)
+
+            return candidates
 
         # find all maximal multi word terms
         candidates = _candidate_words(self.pos_tags)
@@ -173,8 +180,11 @@ class C_NC_TermExtractor(object):
                 for ngram in ngrams(mult_word, n):
                     sub_words += _candidate_words(list(ngram))
 
-        duplicate_less = set(candidates+sub_words)
-        return list(duplicate_less)
+        for word in sub_words:
+            if not word in candidates:
+                candidates.append(word)
+
+        return candidates
 
     def text_from_tagged_ngram(self, ngram):
         """ Returns the text of an pos-tagged ngram.
@@ -210,10 +220,6 @@ class C_NC_TermExtractor(object):
 
 
 def test_snakes():
-    """ Method loads a sample corpus, executes the extraction
-        and prints the state of the etractor for inspection.
-    """
-
     from corpus import CorpusReader
     from pprint import pprint
 
