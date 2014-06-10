@@ -17,10 +17,11 @@ class C_NC_TermExtractor(object):
         self.pos_tags = pos_tag(text, True)
         self.c_values = []
         self.candidate_cache = []
+        self.context_words = defaultdict(lambda: [0, 0])
+        self.conc_index = nltk.ConcordanceIndex(self.pos_tags)
 
         # maps from ("token", "pos-tag") to
         # (freq. as context word, no. of ngrams it appears with):
-        self.context_words = defaultdict(lambda: [0, 0])
         self.weights = defaultdict(int)
 
     def compute_cnc(self):
@@ -48,16 +49,29 @@ class C_NC_TermExtractor(object):
             max_ngrams.append(self.c_values[i][1])
 
         # compute context of max_ngrams
-        self.conc_index = nltk.ConcordanceIndex(self.pos_tags)
         for ngram in max_ngrams:
-            self.extract_context(ngram)
+            context = self.extract_context(ngram)
+            for word, count in context.items():
+                # increment frequency as context word
+                self.context_words[word][0] += count
 
+            # increment number of ngrams the context appeared in
+            for token in set(context):
+                self.context_words[token][1] += 1
+
+        #compute weights
         no_terms = float(len(max_ngrams))
         for token, counts in self.context_words.items():
             corpus_count = self.corpus.count(
                 self.text_from_tagged_ngram(token))
             self.weights[token] = 0.5 * (counts[1]/no_terms +
                                          counts[0]/corpus_count)
+
+        #rearrange c_value list
+        for value, ngram in self.c_values:
+            for context_tuple, count in self.extract_context(ngram):
+                pass
+
         # nc-values
         pass
 
@@ -72,8 +86,9 @@ class C_NC_TermExtractor(object):
         Param:
             ngram: list of tuples of form ("token", "pos-tag")
 
-        Result:
-            self.context is filled with "ngram" -> count entries
+        Returns:
+            context: dict of form ("token", "pos-tag") -> int
+                     mapping context words to the count of their occurence
 
         TODO: Maybe take context as first CONTEXT_TYPE to the left
               and right, instead of just window of size 1?
@@ -104,7 +119,7 @@ class C_NC_TermExtractor(object):
         # holding the offsets of an occurance of ngram.
         # The n-th entry of a sub-list is the
         # offset of the  n-th word of the ngram
-        context = []
+        context = defaultdict(lambda: 0)
         for occurrance in offsets:
             if (occurrance[0] - 1 >= 0 and
             occurrance[-1] + 1 <= len(self.pos_tags)):
@@ -112,13 +127,9 @@ class C_NC_TermExtractor(object):
                 post = self.pos_tags[occurrance[-1]+1]
                 for token in [pre, post]:
                     if token[1] in CONTEXT_TYPES:
-                        context.append(token)
-                        # increment frequency as context word
-                        self.context_words[token][0] += 1
+                        context[token] += 1
 
-        # increment number of ngrams the context appeared in
-        for token in set(context):
-            self.context_words[token][1] += 1
+        return context
 
     def conseq_sequences(self, li, length):
         """ Takes a list and a length. Returns all sub-sequences in li that
