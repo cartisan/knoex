@@ -1,5 +1,6 @@
 from utils import setup_nltk_resources
 from nltk.corpus import wordnet as wn
+import concept
 
 setup_nltk_resources(['wordnet'])
 
@@ -22,17 +23,25 @@ class conceptFormer(object):
 			#think of a clever way to find the best one 
 			return synsets[0]
 		else:
-			return false
+			print 'No concept found'
 
 	
 
 	def form_concepts(self,terms):
+		concepts =[]
 
 		for pair in terms: 
-			term = pair[0]
+			term = pair
+			conc = concept.concept(self.lookUp(term))
 			#tag = pair[1]
-			lookUp(term)
+			concepts.append(conc)
+		return concepts	
 
 
+former = conceptFormer()
+sets = former.form_concepts([('dog'),('house'),('fish')])
+for concept in sets:
+	print concept.synset
 
-print wn.synsets('dog')
+print sets[1].get_hypernyms()
+print sets[0].get_hyponyms()	
