@@ -6,6 +6,8 @@ from preprocessor import pos_tag
 from nltk.util import ngrams
 
 
+# TODO: wrote tests for the class
+# TODO: Get this constants into the class to make it modifyable
 MULTI_TERM_PARSER = nltk.RegexpParser('CHUNK: {<N|ADJ>*<N>}')
 CONTEXT_TYPES = ["V", "N", "ADJ"]
 
@@ -156,7 +158,7 @@ class C_NC_TermExtractor(object):
     def find_multi_word_terms(self):
         def _candidate_words(pos_tags):
             tree = MULTI_TERM_PARSER.parse(pos_tags)
-            return [subtree.leaves() for subtree in tree.subtrees()
+            return [frozenset(subtree.leaves()) for subtree in tree.subtrees()
                     if subtree.node == "CHUNK"]
 
         # find all maximal multi word terms
@@ -171,7 +173,8 @@ class C_NC_TermExtractor(object):
                 for ngram in ngrams(mult_word, n):
                     sub_words += _candidate_words(list(ngram))
 
-        return candidates+sub_words
+        duplicate_less = set(candidates+sub_words)
+        return list(duplicate_less)
 
     def text_from_tagged_ngram(self, ngram):
         """ Returns the text of an pos-tagged ngram.
@@ -206,14 +209,51 @@ class C_NC_TermExtractor(object):
         self.c_values.append((c_value, ngram))
 
 
+def test_snakes():
+    """ Method loads a sample corpus, executes the extraction
+        and prints the state of the etractor for inspection.
+    """
+
+    from corpus import CorpusReader
+    from pprint import pprint
+
+    c = CorpusReader("corpora/snakes.corp")
+
+    #bad_para = []
+    #bad_sent = []
+    #for k, v in c.items():
+        #try:
+            #extractor = C_NC_TermExtractor(v)
+            #extractor.compute_cnc()
+        #except Exception:
+            #bad_sent.append(v)
+            #bad_para.append(k)
+            #continue
+
+    #print bad_para
+    #pprint(bad_sent)
+
+    broken = [1.0, 3.0, 4.0, 12.0, 20.0, 21.0, 26.0, 29.0]
+    good = set(c.keys()).difference(broken)
+
+    text = c.get_corpus(good)
+    extractor = C_NC_TermExtractor(text)
+    extractor.compute_cnc()
+    pprint(extractor.__dict__)
+
+
 def test_execution():
     """ Method loads a sample corpus, executes the extraction
         and prints the state of the etractor for inspection.
     """
-    f = open('corpora/easy', 'r')
-    #f = open('corpora/snakes', 'r')
+    #f = open('corpora/easy', 'r')
+    f = open('corpora/snakes', 'r')
     text = f.read()
     f.close()
+
+    #from corpus import get_wiki_text
+    #text = get_wiki_text()
+
     extractor = C_NC_TermExtractor(text)
     extractor.compute_cnc()
     import pprint
