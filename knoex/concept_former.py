@@ -45,7 +45,7 @@ class conceptFormer(object):
 				for con in concepts:
 					similarity = similarity + possib.path_similarity(con)
 				similarities.append(similarity)
-			concepts.append(synsets[similarities.index(min(similarities))])	
+			concepts.append(synsets[similarities.index(max(similarities))])	
 
 		result = []	
 		for conc in concepts:
@@ -85,7 +85,7 @@ class conceptFormer(object):
 		indices = []
 		for measure in similarities:
 			for i in range(len(measure)):
-				if measure[i] == min(measure):
+				if measure[i] == max(measure):
 					indices.append(i)
 
 		concepts = []
@@ -104,7 +104,7 @@ class conceptFormer(object):
 
 		return count	
 
-print wn.synsets('dog')
+
 
 former = conceptFormer()
 sets = former.form_concepts([('dog'),('house'),('fish')])
