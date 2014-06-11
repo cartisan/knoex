@@ -2,8 +2,9 @@ from math import log
 from collections import defaultdict
 import operator
 import nltk
-from preprocessor import pos_tag
 from nltk.util import ngrams
+from preprocessor import pos_tag
+from term import Term
 
 
 # TODO: wrote tests for the class
@@ -82,9 +83,8 @@ class C_NC_TermExtractor(object):
 
         self.nc_values.sort(key=lambda x: x[1], reverse=True)
 
-        #TODO: Use Term class
         # naive choice on term selection
-        return [word for word, nc in self.nc_values if nc >= 0]
+        return [Term(word) for word, nc in self.nc_values if nc >= 0]
 
     def extract_context(self, ngram):
         """ Takes an ngram and retrieves the context for all
