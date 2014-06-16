@@ -32,6 +32,14 @@ def pos_tag(text, simple=False):
 
     # simplify tags if requested
     if simple:
-        pos = [(word, simplify_wsj_tag(tag)) for word, tag in pos]
+        simple_pos = []
+        for word, tag in pos:
+            new_tag = simplify_wsj_tag(tag)
+            # simplification removes some tags
+            # not allowed to use empty tag so use initial one
+            if not new_tag:
+                new_tag = tag
+            simple_pos.append((word, new_tag))
+        pos = simple_pos
 
     return pos

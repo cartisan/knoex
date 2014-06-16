@@ -2,8 +2,9 @@ from math import log
 from collections import defaultdict
 import operator
 import nltk
-from preprocessor import pos_tag
 from nltk.util import ngrams
+from preprocessor import pos_tag
+from term import Term
 
 
 # TODO: wrote tests for the class
@@ -81,7 +82,9 @@ class C_NC_TermExtractor(object):
             self.nc_values.append((ngram, nc))
 
         self.nc_values.sort(key=lambda x: x[1], reverse=True)
-        #TODO: Decide which terms to return
+
+        # naive choice on term selection
+        return [Term(word) for word, nc in self.nc_values if nc >= 0]
 
     def extract_context(self, ngram):
         """ Takes an ngram and retrieves the context for all
@@ -239,12 +242,9 @@ def test_snakes():
     #print bad_para
     #pprint(bad_sent)
 
-    broken = [1.0, 3.0, 4.0, 12.0, 20.0, 21.0, 26.0, 29.0]
-    good = set(c.keys()).difference(broken)
-
-    text = c.get_corpus(good)
+    text = c.get_corpus()
     extractor = C_NC_TermExtractor(text)
-    extractor.compute_cnc()
+    pprint(extractor.compute_cnc())
     pprint(extractor.__dict__)
 
 
@@ -253,12 +253,11 @@ def test_execution():
         and prints the state of the etractor for inspection.
     """
     #f = open('corpora/easy', 'r')
-    f = open('corpora/snakes', 'r')
-    text = f.read()
-    f.close()
+    #text = f.read()
+    #f.close()
 
-    #from corpus import get_wiki_text
-    #text = get_wiki_text()
+    from corpus import get_wiki_text
+    text = get_wiki_text()
 
     extractor = C_NC_TermExtractor(text)
     extractor.compute_cnc()
