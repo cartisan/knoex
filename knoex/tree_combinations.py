@@ -26,10 +26,11 @@ def all_parsing_combinations(tree):
     combis.append([tree.node])
 
     return combis
-
+    
 # Numerates same named non-terminals in parse tress
-def numerate_non_terminals(tree, num_dict={}):
-
+def numerate_non_terminals(tree, num_dict=None):
+    if num_dict == None :
+        num_dict = {}
     if tree.node in num_dict :
         num_dict[tree.node]+=1
     else :
@@ -46,7 +47,7 @@ def numerate_non_terminals(tree, num_dict={}):
             #else :
             #    num_dict[child]=0
         else :
-            numerate_tags(child, num_dict)
+            numerate_non_terminals(child, num_dict)
 
 # returns terminals of a subtree identified by a node
 def get_terminals(tree,node):
@@ -61,7 +62,6 @@ def get_terminals(tree,node):
         terminals = get_terminals(subtree,node)
         if terminals != None :
             return terminals
-
 
 if __name__ == '__main__':
 
