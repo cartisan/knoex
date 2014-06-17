@@ -5,10 +5,10 @@ import concept
 setup_nltk_resources(['wordnet'])
 
 class conceptFormer(object):
-	
+
 	def __init__(self):
 		pass	
-	
+
 
 	def lookUp(self,term,pofs=wn.NOUN):
 		# takes a term and a part of speech tag 
@@ -20,14 +20,14 @@ class conceptFormer(object):
 		else:
 			print 'No concept found'
 
-	
+
 
 	def form_concepts(self,terms):
 		sets = []
 
 		for term in terms: 
 			sets.append(self.lookUp(term))
-		
+
 		easies = self.get_easies(sets)
 		rest = [x for x in sets if not x in easies]
 		concepts = self.compare_easies(easies)
@@ -49,11 +49,11 @@ class conceptFormer(object):
 
 		result = []	
 		for conc in concepts:
-			c = concept.concept(conc)
+			c = concept.Concept(conc)
 			result.append(c)
 
 		return result	
-				
+
 
 
 	def get_easies(self,sets):
@@ -66,10 +66,10 @@ class conceptFormer(object):
 		if not easies:
 			easies.append(sets[count.index(min(count))])
 		return easies
-			
+
 	def compare_easies(self,easies):
 
-		
+
 		similarities = []
 		for possib in easies:
 			tmp = [x for x in easies if x!=possib] #get rest list
@@ -81,7 +81,7 @@ class conceptFormer(object):
 					similarity = similarity + synset.path_similarity(elem)
 				sim.append(similarity)
 			similarities.append(sim)
-		
+
 		indices = []
 		for measure in similarities:
 			for i in range(len(measure)):
@@ -105,9 +105,24 @@ class conceptFormer(object):
 		return count	
 
 
-
 former = conceptFormer()
-sets = former.form_concepts([('dog'),('house'),('fish')])
-for concept in sets:
-	print concept.synset
+text1 = ['River','fish','bank','Party']
+text2 = ['city','traffic','bank','Sky','teller','money']
 
+onto1 = former.form_concepts(text1)
+onto2 = former.form_concepts(text2)
+
+print "First Context"
+for concept1 in onto1:
+	print concept1.synset
+
+print ""
+print "Second Context"
+for concept2 in onto2:
+	print concept2.synset	
+
+print "First meaning of Bank:"
+print onto1[2].synset.examples
+
+print "Second meaning of Bank"
+print onto2[4].synset.examples	
