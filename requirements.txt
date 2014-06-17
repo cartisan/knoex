@@ -1,3 +1,4 @@
 wikipedia==1.2.1
 nltk==2.0.4
 numpy==1.8.0
+git+git://github.com/emilmont/pyStatParser.git
