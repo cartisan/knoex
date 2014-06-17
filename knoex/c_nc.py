@@ -112,6 +112,7 @@ class C_NC_TermExtractor(object):
             list_of_offset_lists.append(self.conc_index.offsets(token))
 
         offsets = self.flatten_list(list_of_offset_lists)
+        offsets.sort()
         subsequences = self.conseq_sequences(offsets, len_ngram)
 
         # check that offset-order is same as word order in ngram
