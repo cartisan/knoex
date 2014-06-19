@@ -11,11 +11,29 @@ class Concept(object):
 		if synset:
 			self.hypernyms = synset.hypernyms()
 			self.hyponyms = synset.hyponyms()
+		else:
+			self.hypernyms = None
+			self.hyponyms = None	
 		self.relations =[]
 
+	def __str__(self):
+		if self.synset:
+			name = str(self.synset)
+		else:
+			name = str(self.name)	
+	    
+		return name
+
+	def __repr__(self):
+		if self.synset:
+			name = str(self.synset)
+		else:
+			name = str(self.name)	
+	    
+		return name		
 
 	def add_relation(self,concept,relation):
-		self.relations.add((concept,relation))
+		self.relations.append((concept,relation))
 				
 	def get_term(self):
 		return self.term
@@ -24,7 +42,9 @@ class Concept(object):
 		return self.hypernyms
 
 	def get_hyponyms(self):
-		return self.hyponyms	
+		return self.hyponyms
+
+	
 
 
 		
