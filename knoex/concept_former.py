@@ -30,14 +30,29 @@ class conceptFormer(object):
 		else:
 			print 'No concept found'
 
-	
-
 	def form_concepts(self,terms):
 		"""
 		Takes a list of term objects and returns 
 		a list of concepts after applying disambiguation via 
 		comparing possible candidates.
 		"""
+		nouns = [t for t in terms if t.get_head()[1]=='N']
+		verbs = [t for t in terms if t.get_head()[1]=='V']
+		adjectives = [t for t in terms if t.get_head()[1]=='ADJ']
+
+		concepts = []
+		if nouns:
+			concepts.append(self.form(nouns))
+		if verbs:
+			concepts.append(self.form(verbs))
+		if adjectives:
+			concepts.append(self.form(adjectives))
+
+		concepts = [item for sublist in concepts for item in sublist]	
+		return concepts			
+
+	def form(self,terms):
+		#actual formation 
 
 		sets = []
 		multiwords = []
@@ -142,28 +157,3 @@ class conceptFormer(object):
 
 		return concepts	
 
-
-			
-				
-
-
-former = conceptFormer()
-#sets = former.form_concepts([term.Term([('b','b'),('a','a'),('dog','N')]),term.Term([('house','N')]),term.Term([('fish','N')])])
-#for concept in sets:
-#	print concept.synset
-
-
-text1 = [term.Term([('River','N')]),term.Term([('fish','N')]),term.Term([('bank','N')]),term.Term([('Party','N')])]
-text2 = [term.Term([('bank','N')]),term.Term([('city','N')]),term.Term([('traffic','N')]),term.Term([('Spider','N'),('Neighbourhood','N')])]
-
-onto1 = former.form_concepts(text1)
-onto2 = former.form_concepts(text2)
-
-for concept1 in onto1:
-	print concept1.synset
-
-for concept2 in onto2:
-	print concept2.synset	
-
-print onto2[0]
-print onto2[0].relations
