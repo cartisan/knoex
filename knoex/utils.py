@@ -22,29 +22,32 @@ def setup_nltk_resources(resource_urls):
 def nltk_tree_to_dot(tree) :
     
     dot_code = 'digraph graphname {\n'
-    dot_code += str(0) + ' [label="' + tree.node + '"];\n'    
+    dot_code += str(0) + ' [label="' + tree.node + '"];\n'
 
-    def get_subtrees(tree,node_number=0):
+    def get_subtrees(tree,node_number=0,terminals = '{ rank=same; '):
         dot_code = ""
 
         father_node_number = node_number
+
 
         for child in tree:
 
             node_number+=1
 
             if type(child) == str :
-                dot_code += str(node_number) + ' [label="' + child + '"];\n'
+                dot_code += str(node_number) + ' [label="' + child + '" shape=box];\n'
                 dot_code += str(father_node_number) + ' -> ' + str(node_number) + '\n'
+                terminals += str(node_number) + '; '
             else :
                 dot_code += str(node_number) + ' [label="' + child.node + '"];\n'
                 dot_code += str(father_node_number) + ' -> ' + str(node_number) + '\n'
-                new_code, node_number = get_subtrees(child,node_number)
+                new_code, node_number, terminals = get_subtrees(child,node_number,terminals)
                 dot_code += new_code
 
-        return dot_code, node_number
+        return dot_code, node_number, terminals
 
-    new_code, _ = get_subtrees(tree)
+    new_code, _, terminals = get_subtrees(tree)
+    dot_code += terminals + '}\n'
     dot_code += new_code + '}'
 
     return dot_code
