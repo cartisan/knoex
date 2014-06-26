@@ -21,21 +21,31 @@ def setup_nltk_resources(resource_urls):
 
 def nltk_tree_to_dot(tree) :
     
-    dot_code = 'digraph graphname {\n'      
+    dot_code = 'digraph graphname {\n'
+    dot_code += str(0) + ' [label="' + tree.node + '"];\n'    
 
-    def get_subtrees(tree):
-        dot_relations = ""
+    def get_subtrees(tree,node_number=0):
+        dot_code = ""
+
+        father_node_number = node_number
 
         for child in tree:
+
+            node_number+=1
+
             if type(child) == str :
-                dot_relations += '"' + tree.node + '"' + ' -> ' + '"' + child + '"' + '\n'
+                dot_code += str(node_number) + ' [label="' + child + '"];\n'
+                dot_code += str(father_node_number) + ' -> ' + str(node_number) + '\n'
             else :
-                dot_relations += '"' + tree.node + '"' + ' -> ' + '"' + child.node + '"' + '\n'
-                dot_relations += get_subtrees(child)
+                dot_code += str(node_number) + ' [label="' + child.node + '"];\n'
+                dot_code += str(father_node_number) + ' -> ' + str(node_number) + '\n'
+                new_code, node_number = get_subtrees(child,node_number)
+                dot_code += new_code
 
-        return dot_relations
+        return dot_code, node_number
 
-    dot_code += get_subtrees(tree) + '}'
+    new_code, _ = get_subtrees(tree)
+    dot_code += new_code + '}'
 
     return dot_code
 
