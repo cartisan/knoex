@@ -5,7 +5,9 @@ from nltk import pos_tag as nltk_pos_tag
 from nltk.tag.simplify import simplify_wsj_tag
 from nltk.tokenize import sent_tokenize
 from stat_parser import parser as s_parser
+import ctypes
 import os
+from os.path import expanduser
 
 
 def pos_tag(text, simple=False):
@@ -56,13 +58,17 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
         elif path_to_parser[-1] == '/' :
             path_to_parser = path_to_parser[:-1]
 
+        # get the current process_id to run stanforf parser in multiple processes
+        tid = ctypes.CDLL('libc.so.6').syscall(186)
 
         # saves the sentence in a temporary file
-        os.popen("echo '" + sentence + "' > ~/stanfordtemp")
+        tmp_file = '~/stanfordtemp_' + str(tid)
+        os.popen("echo '" + sentence + "' > " + tmp_file)
 
         # calles the stanford parser and outputs string representation of parse tree
-        parser_out = os.popen(path_to_parser + "/lexparser.sh ~/stanfordtemp").readlines()
-        #os.remove('~/stanfordtemp')
+        parser_out = os.popen(path_to_parser + "/lexparser.sh " + tmp_file).readlines()
+        home = expanduser("~")
+        os.remove(home + tmp_file[1:])
 
         # transform the stanford parse tree representation into nltk parse tree representation
         parse_trees_text=[]

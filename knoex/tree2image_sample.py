@@ -2,8 +2,8 @@ import utils
 import preprocessor as pp
 from tree_combinations import numerate_non_terminals
 
-file_name = 'plants'
-s = 'Plants are organisms.'
+file_name = 'car'
+s = 'Leon broke down with his car on the road to Osnabrueck.'
 
 file_name = '/home/momo/Dropbox/parse_trees/' + file_name
 

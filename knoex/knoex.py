@@ -14,3 +14,4 @@ for r in relations :
 if utils.which('dot') :
     dot_code = utils.list_of_tripels_to_dot(relations)
     utils.dot_to_image(dot_code, file_name + '_relations')
+

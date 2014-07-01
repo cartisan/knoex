@@ -1,6 +1,7 @@
 from nltk.data import find
 from nltk import download
 import os
+from os.path import expanduser
 
 def setup_nltk_resources(resource_urls):
     """ Checks weather reasources like tokenizers are
@@ -61,12 +62,14 @@ def list_of_tripels_to_dot(tripel_list):
 
 
 def dot_to_image(dot_code, name) :
-    os.popen("echo '" + dot_code + "' > ~/.temp.dot")
-    os.popen('dot ~/.temp.dot -Tpng -o' + name + '.png')
+    os.popen("echo '" + dot_code + "' > ~/temp.dot")
+    os.popen('dot ~/temp.dot -Tpng -o' + name + '.png')
+    home = expanduser("~")
+    os.remove(home + '/temp.dot')
 
 
 def which(program):
-    """ Checks if a string corresponds to shell command and retursn its location """
+    """ Checks if a string corresponds to a shell command and returns its location. """
     import os
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
