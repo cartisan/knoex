@@ -53,6 +53,33 @@ def nltk_tree_to_dot(tree) :
     return dot_code
 
 
+def list_of_tripels_to_dot(tripel_list):
+    dot_code = 'digraph graphname {\n'
+    for tripel in tripel_list :
+        dot_code += '"' + tripel[0] + '" -> "' + tripel[2] + '" [label="'+ tripel[1] + '"]\n'
+    return dot_code + '}'
+
+
 def dot_to_image(dot_code, name) :
-    os.popen("echo '" + dot_code + "' > ~/temp.dot")
-    os.popen('dot ~/temp.dot -Tpng -o' + name + '.png')
+    os.popen("echo '" + dot_code + "' > ~/.temp.dot")
+    os.popen('dot ~/.temp.dot -Tpng -o' + name + '.png')
+
+
+def which(program):
+    """ Checks if a string corresponds to shell command and retursn its location """
+    import os
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None

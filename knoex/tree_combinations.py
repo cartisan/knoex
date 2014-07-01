@@ -73,10 +73,10 @@ if __name__ == '__main__':
 
     from nltk import Tree  
     import string
-    from stat_parser import parser
+    import preprocessor
 
     tree = Tree('A',[Tree('A',['A','A']),'A'])
-    tree = parser.Parser().parse('All animals are organisms')
+    tree = preprocessor.parse_sentence('Leon hits Kai.')
     print 'Tree:', tree
     print
 
