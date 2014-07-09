@@ -30,14 +30,13 @@ tasks from the host you can use `fab vagrant task-name` where *task-name* is the
 
 (t.b.c)
 
-### Make the external parsers work
 
-# Stanford Parser:
+### Stanford Parser:
 1. Download Stanford Parser : http://nlp.stanford.edu/software/lex-parser.shtml#Download
 2. Create folder "stanford_parser" inside the knoex folder
 3. Extract files from the .zip file into the newly created folder
 
-# Berkeley Parser:
+### Berkeley Parser:
 1. Download Berkeley Parser jar file from : https://code.google.com/p/berkeleyparser/downloads/list
 2. Rename .jar file to BerkeleyParser.jar
 2. Download Grammar ( eng_sm6.gr  )  for some page
