@@ -51,15 +51,17 @@ def pos_tag(text, simple=False):
 
 def parse_sentence(sentence, parser='stanford', path_to_parser=None):
 
+    module_path = os.path.dirname(__file__)
+
+    # get the current process_id to run parser in multiple processes
+    tid = ctypes.CDLL('libc.so.6').syscall(186)
+
     if parser == 'stanford':
 
         if path_to_parser == None :
-            path_to_parser = './stanford-parser-full-2014-01-04'
+            path_to_parser = module_path + '/stanford_parser'
         elif path_to_parser[-1] == '/' :
             path_to_parser = path_to_parser[:-1]
-
-        # get the current process_id to run stanforf parser in multiple processes
-        tid = ctypes.CDLL('libc.so.6').syscall(186)
 
         # saves the sentence in a temporary file
         tmp_file = '~/stanfordtemp_' + str(tid)
@@ -89,6 +91,29 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
         print tree
         parse_tree = Tree(parse_trees_text[0])
 
+
+    elif parser == 'berkeley' :
+        
+        if path_to_parser == None :
+            path_to_parser = module_path + '/berkeley_parser/'
+        elif path_to_parser[-1] != '/' :
+            path_to_parser += '/'
+
+        grammar = path_to_parser + 'eng_sm6.gr'
+        path_to_parser += 'BerkeleyParser.jar'
+
+
+        # saves the sentence in a temporary file
+        tmp_file = '~/berkeleytemp_' + str(tid)
+        os.popen("echo '" + sentence + "' > " + tmp_file)
+
+        # calles the berkeley parser and outputs string representation of parse tree
+
+        parser_out = os.popen('java -jar ' + path_to_parser + ' -gr ' + grammar + ' -inputFile ' + tmp_file).readlines()
+        home = expanduser("~")
+        os.remove(home + tmp_file[1:])
+
+        parse_tree = Tree(parser_out[0])
 
     elif parser in ['s_parser','stat','stat_parser']:
         sp = s_parser.Parser()
