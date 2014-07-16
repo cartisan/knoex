@@ -11,6 +11,7 @@ from term import Term
 # TODO: Get this constants into the class to make it modifyable
 MULTI_TERM_PARSER = nltk.RegexpParser('CHUNK: {<N|ADJ>*<N>}')
 CONTEXT_TYPES = ["V", "N", "ADJ"]
+THRESHOLD = 0  # completly arbitrary threshold on c and nc_values
 
 
 class C_NC_TermExtractor(object):
@@ -42,16 +43,16 @@ class C_NC_TermExtractor(object):
         for ngram in candidates:
             self._compute_c_value(ngram, max_len)
 
-        self.c_values.sort(key=lambda x: x[0], reverse=True)
+        self.c_values.sort(key=lambda x: x[1], reverse=True)
 
         # compute weight
         # get all ngrams with maximal c_value
-        max_value, max_ngrams = self.c_values[0]
+        max_ngrams, max_value = self.c_values[0]
         max_ngrams = [max_ngrams]
         for i in range(1, len(self.c_values)):
-            if self.c_values[i][0] < max_value:
+            if self.c_values[i][1] < max_value:
                 break
-            max_ngrams.append(self.c_values[i][1])
+            max_ngrams.append(self.c_values[i][0])
 
         # compute context of max_ngrams
         for ngram in max_ngrams:
@@ -73,7 +74,7 @@ class C_NC_TermExtractor(object):
                                          counts[0]/corpus_count)
 
         # compute nc_value for each candidate
-        for c, ngram in self.c_values:
+        for ngram, c in self.c_values:
             #accumulate weight for ngram using it's context
             wei = 0
             for word in self.extract_context(ngram).keys():
@@ -84,7 +85,8 @@ class C_NC_TermExtractor(object):
         self.nc_values.sort(key=lambda x: x[1], reverse=True)
 
         # naive choice on term selection
-        return [Term(word) for word, nc in self.nc_values if nc >= 0]
+        # TODO: Logik auslagern und mit multi_term/1 vereinigen
+        return [Term(word) for word, nc in self.nc_values if nc > THRESHOLD]
 
     def extract_context(self, ngram):
         """ Takes an ngram and retrieves the context for all
@@ -204,6 +206,12 @@ class C_NC_TermExtractor(object):
             return ngram[0]
         return " ".join(zip(*ngram)[0])
 
+    def multi_word_terms(self, metric='nc'):
+        metric += "_values"  # potential security breach
+        terms = getattr(self, metric, [])
+        return [word for word, nc_value in terms if nc_value > THRESHOLD]
+
+
     def _compute_c_value(self, ngram, max_n):
         ngram_text = self.text_from_tagged_ngram(ngram)
         len_ngram = len(ngram)
@@ -220,7 +228,7 @@ class C_NC_TermExtractor(object):
 
             c_value = c_value - float(1)/len(containing_ngrams)*dependency_score
 
-        self.c_values.append((c_value, ngram))
+        self.c_values.append((ngram, c_value))
 
 
 def test_snakes():
@@ -228,20 +236,6 @@ def test_snakes():
     from pprint import pprint
 
     c = CorpusReader("corpora/snakes.corp")
-
-    #bad_para = []
-    #bad_sent = []
-    #for k, v in c.items():
-        #try:
-            #extractor = C_NC_TermExtractor(v)
-            #extractor.compute_cnc()
-        #except Exception:
-            #bad_sent.append(v)
-            #bad_para.append(k)
-            #continue
-
-    #print bad_para
-    #pprint(bad_sent)
 
     text = c.get_corpus()
     extractor = C_NC_TermExtractor(text)
