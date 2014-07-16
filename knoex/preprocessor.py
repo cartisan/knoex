@@ -1,5 +1,4 @@
-from utils import setup_nltk_resources
-
+from nltk import download
 from nltk import word_tokenize
 from nltk import pos_tag as nltk_pos_tag
 from nltk.tag.simplify import simplify_wsj_tag
@@ -18,17 +17,21 @@ def pos_tag(text, simple=False):
         list of tuples of form (token, pos-tag)
     """
 
-    # check availability of nltk resources for pos-tagging
-    resources = ['punkt',
-                 'maxent_treebank_pos_tagger']
-    setup_nltk_resources(resources)
-
     # tokenize to sentences, then to tokens
-    tokens = [token.lower() for sen in sent_tokenize(text)
-              for token in word_tokenize(sen)]
+    try:
+        tokens = [token.lower() for sen in sent_tokenize(text)
+                  for token in word_tokenize(sen)]
+    except LookupError:
+        download("punkt")
+        tokens = [token.lower() for sen in sent_tokenize(text)
+                  for token in word_tokenize(sen)]
 
     # generate pos-tags
-    pos = nltk_pos_tag(tokens)
+    try:
+        pos = nltk_pos_tag(tokens)
+    except LookupError:
+        download('maxent_treebank_pos_tagger')
+        pos = nltk_pos_tag(tokens)
 
     # simplify tags if requested
     if simple:
