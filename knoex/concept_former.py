@@ -2,6 +2,7 @@ from utils import setup_nltk_resources
 from nltk.corpus import wordnet as wn
 import concept 
 import term
+import preprocessor 
 
 setup_nltk_resources(['wordnet'])
 
@@ -15,14 +16,7 @@ class conceptFormer(object):
 		# takes a term and a part of speech tag 
 		# and looks up the synsets in Wordnet
 
-		if pos=='N':
-			pos = wn.NOUN
-		elif pos =='V':
-			pos = wn.VERB
-		elif pos =='ADJ':
-			pos = wn.ADJ
-		else:
-			print 'No regular Part of speech'		
+		pos = pos_tag(pos)
 
 		synsets = wn.synsets(term,pos=pos)
 		if len(synsets)>0:
@@ -49,7 +43,7 @@ class conceptFormer(object):
 			concepts.append(self.form(adjectives))
 
 		concepts = [item for sublist in concepts for item in sublist]	
-		return concepts			
+		return set(concepts)			
 
 	def form(self,terms):
 		#actual formation 
@@ -69,8 +63,7 @@ class conceptFormer(object):
 		concepts = self.compare_easies(easies)
 		concepts = self.compare_concepts(concepts,rest)
 
-		for mult in multiwords:
-			for con in concepts:
+		for (mult,con) in [(mult,con) for con in concepts for mult in multiwords]:
 				if str(con.get_term()) == str(mult.get_term()):
 					mult.add_relation(con,'hypernym')
 					con.add_relation(mult,'hyponym')
@@ -143,9 +136,8 @@ class conceptFormer(object):
 			similarities.append(sim)
 		
 		indices = []
-		for measure in similarities:
-			for i in range(len(measure)):
-				if measure[i] == max(measure):
+		for (measure,i) in [(measure,i) for measure in similarities for i in range(len(measure))]:
+			if measure[i] == max(measure):
 					indices.append(i)
 
 		concepts = []
@@ -157,3 +149,60 @@ class conceptFormer(object):
 
 		return concepts	
 
+	def find_hearst_concepts(self,triples):
+		triples = list(triples)
+		pairs = [(tri[0],tri[2]) for tri in triples]
+
+		concepts = []
+		for (t1,t2) in pairs:
+			term1 = term.Term(pos_tag(term1,True))
+			term2 = term.Term(pos_tag(term2,True))
+
+			synsets1 = wn.synsets(term1.get_head()[0],pos_tag(term1.get_head()[1]))
+			synsets2 = wn.synsets(term1.get_head()[0],pos_tag(term1.get_head()[1]))
+			(best1,best2) = comp(synsets1,synsets2)
+
+			con1 = concept.Concept(synset=best1)
+			con2 = concept.Concept(synset=best2)
+
+			if len(term1.get_terms()) > 1:
+				conChild1 = concept.Concept(name=term1.get_terms(),term=term1.get_head()[0])
+				con1.add_relation(con1,'hypernym')
+				conChild1.add_relation(conChild1,'hyponym')			 
+			if len(term2.get_terms()) > 1:
+				conChild2 = concept.Concept(name=term2.get_terms(),term=term2.get_head()[0])
+				con2.add_relation(con2,'hypernym')
+				conChild2.add_relation(conChild2,'hyponym')
+			
+			con1.add_relation(triples[1]) #? - add child or parent ?
+			concepts.append(con1)
+			concepts.append(con2)
+
+		return set(concepts)
+
+	def comp(self,synsets1,synsets2):
+		
+		similarity = 0
+		for (try1,try2) in [(try1,try2) for try1 in synsets1 for try2 in synsets2]:
+			newsimilarity = try1.path_similarity(try2)
+			if newsimilarity > similarity:
+				similarity = newsimilarity
+				best1 = try1
+				best2 = try2
+
+		return (best1,best2)		 
+
+
+	def pos_tag(self,pos):
+
+		pos = ''
+		if pos=='N':
+			pos = wn.NOUN
+		elif pos =='V':
+			pos = wn.VERB
+		elif pos =='ADJ':
+			pos = wn.ADJ
+		else:
+			print 'No regular Part of speech'
+
+		return pos
