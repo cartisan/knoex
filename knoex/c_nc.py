@@ -85,7 +85,8 @@ class C_NC_TermExtractor(object):
         self.nc_values.sort(key=lambda x: x[1], reverse=True)
 
         # naive choice on term selection
-        return [Term(word) for word, nc in self.nc_values if nc >= 0]
+        # TODO: Logik auslagern und mit multi_term/1 vereinigen
+        return [Term(word) for word, nc in self.nc_values if nc > THRESHOLD]
 
     def extract_context(self, ngram):
         """ Takes an ngram and retrieves the context for all
