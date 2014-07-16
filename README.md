@@ -29,3 +29,17 @@ Start the VM using `vagrant up`. You can now ssh onto it using `vagrant ssh` (cl
 tasks from the host you can use `fab vagrant task-name` where *task-name* is the name of the task defined in *fabfile.py*.
 
 (t.b.c)
+
+
+### Stanford Parser:
+1. Download Stanford Parser : http://nlp.stanford.edu/software/lex-parser.shtml#Download
+2. Create folder "stanford_parser" inside the knoex folder
+3. Extract files from the .zip file into the newly created folder
+
+### Berkeley Parser:
+1. Download Berkeley Parser jar file from : https://code.google.com/p/berkeleyparser/downloads/list
+2. Rename .jar file to BerkeleyParser.jar
+2. Download Grammar ( eng_sm6.gr  )  for some page
+3. Create folder "berkeley_parser" inside the knoex folder and put both downloaded files in it
+
+BOTH PARSERS REQUIRE JAVA 

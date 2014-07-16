@@ -1,6 +1,5 @@
 import itertools   
 
-
 # get all combinations of a parsetree
 # unsuprisingly awefull runtime complexity
 def all_parsing_combinations(tree):
@@ -49,10 +48,16 @@ def numerate_non_terminals(tree, num_dict=None):
         else :
             numerate_non_terminals(child, num_dict)
 
+
 # returns terminals of a subtree identified by a node
 def get_terminals(tree,node):
 
-    if type(tree) == str :
+    if type(node) == unicode :
+        #print 'UNICODE'
+        node = str(node)
+
+    if type(tree) in (str, unicode) :
+        #print 'TYPE', type(tree)
         return None
 
     if tree.node == node :
@@ -63,18 +68,19 @@ def get_terminals(tree,node):
         if terminals != None :
             return terminals
 
+
 if __name__ == '__main__':
 
     from nltk import Tree  
     import string
-    from stat_parser import parser
+    import preprocessor
 
     tree = Tree('A',[Tree('A',['A','A']),'A'])
-    tree = parser.Parser().parse('All animals are organisms')
+    tree = preprocessor.parse_sentence('Leon hits Kai.')
     print 'Tree:', tree
     print
 
-    numerate_tags(tree)
+    numerate_non_terminals(tree)
     print 'Num_Tree:', tree
     print
 
