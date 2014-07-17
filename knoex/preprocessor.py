@@ -75,17 +75,20 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
             path_to_parser = path_to_parser[:-1]
 
         # saves the sentence in a temporary file
-        tmp_file = '~/stanfordtemp_' + str(tid)
-        os.popen("echo '" + sentence + "' > " + tmp_file)
+        #tmp_file = '~/stanfordtemp_' + str(tid)
+        tmp_file = 'stanfordtemp_' + str(tid)
+        f = open(tmp_file, 'w')
+        f.write(sentence)
+        f.close()
+        #os.popen("echo '" + sentence + "' > " + tmp_file)
 
         # calles the stanford parser and outputs string representation of parse tree
         if sys.platform == 'win32':
-            parser_out = os.popen(path_to_parser + "/lexparser.bat " + tmp_file).readlines()
+            parser_out = os.popen(path_to_parser + "//lexparser.bat " + tmp_file).readlines()
         else:
-            parser_out = os.popen(path_to_parser + "/lexparser.bat " + tmp_file).readlines()
+            parser_out = os.popen(path_to_parser + "/lexparser.sh " + tmp_file).readlines()
 
-        home = expanduser("~")
-        os.remove(home + tmp_file[1:])
+        os.remove(tmp_file)
 
         #print parser_out
 
