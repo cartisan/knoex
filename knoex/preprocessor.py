@@ -1,12 +1,13 @@
+import os
+import ctypes
 from nltk import download
 from nltk import word_tokenize, Tree
 from nltk import pos_tag as nltk_pos_tag
 from nltk.tag.simplify import simplify_wsj_tag
 from nltk.tokenize import sent_tokenize
 from stat_parser import parser as s_parser
-import ctypes
-import os
 from os.path import expanduser
+from random import randint
 
 
 def pos_tag(text, simple=False):
@@ -57,10 +58,13 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
     abs_path = os.path.abspath(__file__)
     module_path = os.path.dirname(abs_path)
     
-    print 'module_path', module_path
+    #print 'module_path', module_path
 
     # get the current process_id to run parser in multiple processes
-    tid = ctypes.CDLL('libc.so.6').syscall(186)
+    try :
+        tid = ctypes.CDLL('libc.so.6').syscall(186)
+    except :
+        tid = randint(0,1000000)
 
     if parser == 'stanford':
 
@@ -78,7 +82,7 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
         home = expanduser("~")
         os.remove(home + tmp_file[1:])
 
-        print parser_out
+        #print parser_out
 
         # transform the stanford parse tree representation into nltk parse tree representation
         parse_trees_text=[]
@@ -96,14 +100,14 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
                 tree = tree + line
 
         # neglect parse_trees_text[1] at this point
-        print 'tree', tree
+        #print 'tree', tree
         parse_tree = Tree(parse_trees_text[0])
         print
         print 'PT0', parse_trees_text[0]
         print
         print 'PT1', parse_trees_text[1]
-
-
+        print
+	
     elif parser == 'berkeley' :
         
         if path_to_parser == None :
