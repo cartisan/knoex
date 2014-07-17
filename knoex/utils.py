@@ -1,4 +1,3 @@
-from nltk.data import find
 from nltk import download
 import os
 from os.path import expanduser
