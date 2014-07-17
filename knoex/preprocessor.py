@@ -1,4 +1,5 @@
 import os
+import sys
 import ctypes
 from nltk import download
 from nltk import word_tokenize, Tree
@@ -57,7 +58,7 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
 
     abs_path = os.path.abspath(__file__)
     module_path = os.path.dirname(abs_path)
-    
+
     #print 'module_path', module_path
 
     # get the current process_id to run parser in multiple processes
@@ -78,7 +79,11 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
         os.popen("echo '" + sentence + "' > " + tmp_file)
 
         # calles the stanford parser and outputs string representation of parse tree
-        parser_out = os.popen(path_to_parser + "/lexparser.sh " + tmp_file).readlines()
+        if sys.platform == 'win32':
+            parser_out = os.popen(path_to_parser + "/lexparser.bat " + tmp_file).readlines()
+        else:
+            parser_out = os.popen(path_to_parser + "/lexparser.bat " + tmp_file).readlines()
+
         home = expanduser("~")
         os.remove(home + tmp_file[1:])
 
