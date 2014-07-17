@@ -1,5 +1,4 @@
 from nltk import download
-from utils import setup_nltk_resources
 from nltk import word_tokenize, Tree
 from nltk import pos_tag as nltk_pos_tag
 from nltk.tag.simplify import simplify_wsj_tag
