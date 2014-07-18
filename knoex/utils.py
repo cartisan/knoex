@@ -61,10 +61,12 @@ def list_of_tripels_to_dot(tripel_list):
 
 
 def dot_to_image(dot_code, name) :
-    os.popen("echo '" + dot_code + "' > ~/temp.dot")
-    os.popen('dot ~/temp.dot -Tpng -o' + name + '.png')
-    home = expanduser("~")
-    os.remove(home + '/temp.dot')
+    tmp_file = 'temp.dot'
+    f = open(tmp_file, 'w')
+    f.write(dot_code)
+    f.close()
+    os.popen('dot temp.dot -Tpng -o' + name + '.png')
+    os.remove('temp.dot')
 
 
 def which(program):

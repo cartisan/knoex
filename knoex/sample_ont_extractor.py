@@ -14,8 +14,9 @@ terms = term_extractor.compute_cnc()
 former = ConceptFormer()
 former.form_concepts(terms)
 #pprint(former.get_taxonomy())
-tripels = [tripel for concept in list(former.get_taxonomy()) for tripel in concept.make_tripels()]
+tripels = [tripel for concept in list(former.get_taxonomy())
+           for tripel in concept.make_tripels()]
 pprint(tripels)
-utils.dot_to_image(utils.list_of_tripels_to_dot(tripels),'snake.jpg')
+utils.dot_to_image(utils.list_of_tripels_to_dot(tripels), 'snake')
 #relations = RelationExtractor.find_realation(text)
 #print relations
