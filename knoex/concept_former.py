@@ -1,4 +1,3 @@
-import pdb
 from utils import setup_nltk_resources
 from nltk.corpus import wordnet as wn
 import concept
@@ -37,13 +36,12 @@ class conceptFormer(object):
 
         concepts = []
         if nouns:
-            concepts.append(self.form(nouns))
+            concepts += self.form(nouns)
         if verbs:
-            concepts.append(self.form(verbs))
+            concepts += self.form(verbs)
         if adjectives:
-            concepts.append(self.form(adjectives))
+            concepts += self.form(adjectives)
 
-        concepts = [item for sublist in concepts for item in sublist]
         return set(concepts)
 
     def form(self, terms):
