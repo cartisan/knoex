@@ -42,11 +42,13 @@ class Concept(object):
             return hash(self.name)
 
     def add_relation(self, concept, relation):
-        self.relations.append((concept, relation))
+    	if not relation=='is_a':
+        	self.relations.append((concept, relation))
 
     def add_hypernym(self,concept):
     	if not concept in self.hypernyms:
     		self.hypernyms.append(concept)
+
 
     def add_hyponym(self,concept):
     	self.hyponyms.append(concept)
@@ -59,6 +61,9 @@ class Concept(object):
 
     def get_hyponyms(self):
         return self.hyponyms
+
+    def get_relations(self):
+    	return self.relations
 
     def make_tripels(self):
     	tripels = []
