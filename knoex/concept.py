@@ -3,10 +3,11 @@ class Concept(object):
         self.synset = synset
         self.name = name
         self.term = term
-        if synset:
-        	self.name = [self.term]
         self.hypernyms = []
         self.hyponyms = []
+        if synset:
+        	self.name = [self.term]
+
         self.relations = []
 
     def __str__(self):
@@ -64,5 +65,8 @@ class Concept(object):
     	if self.hypernyms:
     		for hyper in self.hypernyms:
     			tripels.append((' '.join(self.name),'is_a',' '.join(hyper.name)))
+    	elif self.synset:
+    		for hyper in self.synset.hypernyms():
+    			tripels.append((' '.join(self.name),'is_a',' '.join([hyper.name.split('.')[0]])))		
     	
     	return tripels
