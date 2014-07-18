@@ -1,5 +1,6 @@
 from nltk.tree import Tree
 from copy import copy
+from string import join
 
 class ParseTree:
 
@@ -43,7 +44,7 @@ class ParseTree:
 		# find next anchestrial sibling
 
 		if nodepath == 'start' :
-			asib = ()
+			asib = []
 		else:
 			asib = list(copy(nodepath))
 			while len(asib)>0 :
@@ -65,7 +66,7 @@ class ParseTree:
 
 
 	def get_subtree(self, nodepath):
-		ac_node = self
+		ac_node = self.tree
 		for i in nodepath :
 			ac_node = ac_node[i]
 		return ac_node
@@ -78,36 +79,48 @@ class ParseTree:
 		else :
 			return sub
 
-
-"""def match(pattern, parsetree):
-	d = parsetree.nt_dict
-
-	phrase_matches = []
-
-	for phrase in pattern :
-		if phrase not in d :
-			print 'out here'
-			return []
+	def get_terminals(self, nodepath):
+		sub = self.get_subtree(nodepath)
+		if type(sub)==Tree:
+			return sub.leaves()
 		else :
-			phrase_matches.append(d[phrase])
+			return [sub]
 
 
-	def match_(phrase_matches, node, path, pattern_matches):
+def match(pattern, parsetree):
 
-		if len(phrase_matches) == 0:
-			pass
+	def match_(pattern, nodepath, parsetree):
 
-		nodes = parsetree.next_to(node)
+		if len(pattern) == 0 :
+			print 'matched', nodepath
+			return [[]]
 
-		matches = intersect(phrase_matches[0], nodes)
+		token_matches = parsetree.nt_dict[pattern[0]]
+		next_to = parsetree.next_to(nodepath)
 
-		for m in matches :
-			match_(phrase_matches[1:], m)"""
+		matches = []
+		for next_nodepath in intersect(token_matches, next_to) :
+			submatches = match_(pattern[1:], next_nodepath, parsetree)
+			for submatch in submatches :
+				matches.append([next_nodepath]+submatch)
+
+		return matches
+
+	return match_(pattern, 'start', parsetree)
 
 
+def match_to_terminals(match, parsetree):
+	list_ = []
+	for path in match :
+		list_.append(parsetree.get_terminals(path))
+	return list_
 
-	print phrase_matches
-
+def match_to_joined_terminals(match, parsetree):
+	list_ = []
+	for path in match :
+		list_.append(join(parsetree.get_terminals(path)))
+	return list_
+		
 
 def intersect(l1,l2):
 	s = set(l1).intersection(set(l2))
@@ -116,10 +129,37 @@ def intersect(l1,l2):
 
 if __name__=="__main__":
 	import preprocessor as pp
-	tree = pp.parse_sentence('Leon hits Kai.')
+	tree = pp.parse_sentence('The python hits Kai.')
+	tree = tree[0]
+	pt = ParseTree(tree)
+	print
+	for item in pt.nt_dict.items() :
+		print item
+	print
+	for path in pt.nodepaths :
+		print path
+	print
+
+	print 'test get_subtree'
+	print pt.get_subtree((1,))
+	print 'test get_node'
+	print pt.get_node((1,))
+	print 'test get_terminals'
+	print pt.get_terminals((1,))
+
+	print 'test next_to ()'
+	print pt.next_to(())
+	print 'test next_to (0,)'
+	print pt.next_to((0,))
+	print 'test next_to start'
+	print pt.next_to('start')
+	print
+	print 'text match'
+
+	pattern = ['NP','VBZ','NP']
+	matches = match(pattern, pt)
+
+	for match in matches :
+		print match_to_joined_terminals(match, pt)
 	
-	
-
-
-
 
