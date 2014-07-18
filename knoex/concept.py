@@ -31,6 +31,9 @@ class Concept(object):
         if self.synset:
             return hash(str(self.synset))
         else:
+            if type(self.name) == list:
+                return hash(" ".join(self.name))
+
             return hash(self.name)
 
     def add_relation(self, concept, relation):

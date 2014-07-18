@@ -71,7 +71,7 @@ class conceptFormer(object):
                     mult.add_relation(con, 'hypernym')
                     con.add_relation(mult, 'hyponym')
 
-        return concepts 
+        return concepts + multiwords
 
     def compare_concepts(self, concepts, rest):
         #Compares already found concepts to possible synsts for each term
