@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 import os, ctypes
-=======
 from nltk import download
->>>>>>> 864e54779f2d41e74eb997b7d9def9268164d9a1
 from utils import setup_nltk_resources
 from nltk import word_tokenize, Tree
 from nltk import pos_tag as nltk_pos_tag
