@@ -39,13 +39,12 @@ class conceptFormer(object):
 
         concepts = []
         if nouns:
-            concepts.append(self.form(nouns))
+            concepts += self.form(nouns)
         if verbs:
-            concepts.append(self.form(verbs))
+            concepts += self.form(verbs)
         if adjectives:
-            concepts.append(self.form(adjectives))
+            concepts += self.form(adjectives)
 
-        concepts = [item for sublist in concepts for item in sublist]
         return set(concepts)
 
     def form(self, terms):
@@ -72,7 +71,7 @@ class conceptFormer(object):
                     mult.add_relation(con, 'hypernym')
                     con.add_relation(mult, 'hyponym')
 
-        return concepts 
+        return concepts + multiwords
 
     def compare_concepts(self, concepts, rest):
         #Compares already found concepts to possible synsts for each term
@@ -87,7 +86,7 @@ class conceptFormer(object):
                 for con in conNoTerm:
                     similarity = similarity + possib.path_similarity(con)
                 similarities.append(similarity)
-            concepts.append((synsets[similarities.index(max(similarities))],rest[restNoTerm.index(synsets)][0]))
+            concepts.append((synsets[similarities.index(max(similarities))],rest[restNoTerm.index(synsets)][1]))
 
         result = []
         for conc in concepts:
@@ -102,13 +101,15 @@ class conceptFormer(object):
         #the smallest list
 
         synsets = [x[0] for x in sets]
-        count = self.count_synsets(synsets)
-        indices = [x for x in count if x <= 3]
+        counts = self.count_synsets(synsets)
+        indices = [index for index, count in
+                   enumerate(counts) if count <= 3]
+
         easies = []
         for index in indices:
             easies.append(sets[index])
         if not easies:
-            easies.append(sets[count.index(min(count))])
+            easies.append(sets[counts.index(min(counts))])
         return easies
 
     def count_synsets(self, sets):

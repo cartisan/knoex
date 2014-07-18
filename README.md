@@ -39,7 +39,7 @@ tasks from the host you can use `fab vagrant task-name` where *task-name* is the
 ### Berkeley Parser:
 1. Download Berkeley Parser jar file from : https://code.google.com/p/berkeleyparser/downloads/list
 2. Rename .jar file to BerkeleyParser.jar
-2. Download Grammar ( eng_sm6.gr  )  for some page
+2. Download Grammar ( eng_sm6.gr  )  for same page
 3. Create folder "berkeley_parser" inside the knoex folder and put both downloaded files in it
 
 BOTH PARSERS REQUIRE JAVA 
