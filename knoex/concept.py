@@ -27,6 +27,12 @@ class Concept(object):
 
         return name
 
+    def __eq__(self, other):
+        if isinstance(other, Concept):
+            return hash(self) == hash(other)
+        else:
+            return False
+
     def __hash__(self):
         if self.synset:
             return hash(str(self.synset))
