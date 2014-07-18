@@ -18,17 +18,17 @@ class Concept(object):
 
 	def __str__(self):
 		if self.synset:
-			name = str(self.synset)
+			name = "Concept({})".format(str(self.synset))
 		else:
-			name = str(self.name)	
+			name = "Concept({})".format(str(self.name))
 	    
 		return name
 
 	def __repr__(self):
 		if self.synset:
-			name = str(self.synset)
+			name = "Concept({})".format(str(self.synset))
 		else:
-			name = str(self.name)	
+			name = "Concept({})".format(str(self.name))
 	    
 		return name		
 

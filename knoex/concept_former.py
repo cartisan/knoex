@@ -100,13 +100,15 @@ class conceptFormer(object):
         #the smallest list
 
         synsets = [x[0] for x in sets]
-        count = self.count_synsets(synsets)
-        indices = [x for x in count if x <= 3]
+        counts = self.count_synsets(synsets)
+        indices = [index for index, count in
+                   enumerate(counts) if count <= 3]
+
         easies = []
         for index in indices:
             easies.append(sets[index])
         if not easies:
-            easies.append(sets[count.index(min(count))])
+            easies.append(sets[counts.index(min(counts))])
         return easies
 
     def count_synsets(self, sets):
