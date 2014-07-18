@@ -3,16 +3,26 @@ from nltk.corpus import wordnet as wn
 import concept
 from term import Term
 import preprocessor
-
+import itertools
 
 setup_nltk_resources(['wordnet'])
 
 
 class conceptFormer(object):
 
+
     def __init__(self):
-        pass    
+          self.multi_concepts = None
+          self.single_concepts = None
     
+    def get_taxonomy(self):
+        if self.multi_concepts and self.single_concepts:
+            return self.multi_concepts.union(self.single_concepts)
+        if self.multi_concepts:
+            return self.multi_concepts
+        if self.single_concepts:
+            return self.single_concepts
+        return set([])        
 
     def lookUp(self,term,pos):
         # takes a term and a part of speech tag 
@@ -27,6 +37,7 @@ class conceptFormer(object):
             print\
                 'Concept Former: No concept found for "{}"'.format(term)
 
+
     def form_concepts(self, terms):
         """
         Takes a list of term objects and returns
@@ -34,18 +45,19 @@ class conceptFormer(object):
         comparing possible candidates.
         """
         nouns = [t for t in terms if t.get_head()[1]=='N']
-        verbs = [t for t in terms if t.get_head()[1]=='V']
-        adjectives = [t for t in terms if t.get_head()[1]=='ADJ']
+        #verbs = [t for t in terms if t.get_head()[1]=='V']
+        #adjectives = [t for t in terms if t.get_head()[1]=='ADJ']
 
-        concepts = []
-        if nouns:
-            concepts += self.form(nouns)
-        if verbs:
-            concepts += self.form(verbs)
-        if adjectives:
-            concepts += self.form(adjectives)
+        #concepts = []
+        #if nouns:
+        #   concepts += 
+        self.form(nouns)
+        #if verbs:
+        #    concepts += self.form(verbs)
+        #if adjectives:
+        #    concepts += self.form(adjectives)
 
-        return set(concepts)
+        #return set(concepts)
 
     def form(self, terms):
         #actual formation
@@ -66,12 +78,13 @@ class conceptFormer(object):
         concepts = self.compare_easies(easies)
         concepts = self.compare_concepts(concepts, rest)
 
-        for (mult, con) in [(mult, con) for con in concepts for mult in multiwords]:
+        for (mult, con) in itertools.product(multiwords,concepts):
                 if str(con.get_term()) == str(mult.get_term()):
-                    mult.add_relation(con, 'hypernym')
-                    con.add_relation(mult, 'hyponym')
+                    mult.add_hypernym(con)
+                    con.add_hyponym(mult)
 
-        return concepts + multiwords
+        self.multi_concepts = set(multiwords)
+        self.single_concepts = set(concepts) 
 
     def compare_concepts(self, concepts, rest):
         #Compares already found concepts to possible synsts for each term

@@ -4,11 +4,9 @@ class Concept(object):
         self.name = name
         self.term = term
         if synset:
-            self.hypernyms = synset.hypernyms()
-            self.hyponyms = synset.hyponyms()
-        else:
-            self.hypernyms = None
-            self.hyponyms = None
+        	self.name = [self.term]
+        self.hypernyms = []
+        self.hyponyms = []
         self.relations = []
 
     def __str__(self):
@@ -45,6 +43,13 @@ class Concept(object):
     def add_relation(self, concept, relation):
         self.relations.append((concept, relation))
 
+    def add_hypernym(self,concept):
+    	if not concept in self.hypernyms:
+    		self.hypernyms.append(concept)
+
+    def add_hyponym(self,concept):
+    	self.hyponyms.append(concept)
+
     def get_term(self):
         return self.term
 
@@ -53,3 +58,11 @@ class Concept(object):
 
     def get_hyponyms(self):
         return self.hyponyms
+
+    def make_tripels(self):
+    	tripels = []
+    	if self.hypernyms:
+    		for hyper in self.hypernyms:
+    			tripels.append((' '.join(self.name),'is_a',' '.join(hyper.name)))
+    	
+    	return tripels
