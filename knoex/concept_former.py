@@ -1,3 +1,4 @@
+import pdb
 from utils import setup_nltk_resources
 from nltk.corpus import wordnet as wn
 import concept
@@ -85,7 +86,7 @@ class conceptFormer(object):
                 for con in conNoTerm:
                     similarity = similarity + possib.path_similarity(con)
                 similarities.append(similarity)
-            concepts.append((synsets[similarities.index(max(similarities))],rest[restNoTerm.index(synsets)][0]))
+            concepts.append((synsets[similarities.index(max(similarities))],rest[restNoTerm.index(synsets)][1]))
 
         result = []
         for conc in concepts:
