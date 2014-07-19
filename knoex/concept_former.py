@@ -169,8 +169,9 @@ class conceptFormer(object):
 
     def find_hearst_concepts(self, triples):
         
-
-        concepts = []
+        print triples
+        s_concepts = []
+        m_concepts = []
         for (t1, rel, t2) in triples:
             term1 = Term(preprocessor.pos_tag(t1, True))
             term2 = Term(preprocessor.pos_tag(t2, True))
@@ -184,32 +185,33 @@ class conceptFormer(object):
 
             if len(term1.get_terms()) > 1:
                 conChild1 = concept.Concept(name=term1.get_terms(),term=term1.get_head()[0])
-                con1.add_hypernym(con1)
-                conChild1.add_hyponym(conChild1) 
-                concepts.append(conChild1)       
+                con1.add_hyponym(conChild1)
+                conChild1.add_hypernym(con1) 
+                #m_concepts.append(conChild1)       
             if len(term2.get_terms()) > 1:
                 conChild2 = concept.Concept(name=term2.get_terms(),term=term2.get_head()[0])
-                con2.add_hypernym(con2)
-                conChild2.add_hyponym(conChild2)
-                concepts.append(conChild2)  
+                con2.add_hyponym(conChild2)
+                conChild2.add_hypernym(con2)
+                #m_concepts.append(conChild2)  
             
             if conChild1:
                 if conChild2:
                     conChild1.add_relation(conChild2,rel)
                 else:
                     conChild1.add_relation(con2,rel)    
-                concepts.append(conChild1)    
+                m_concepts.append(conChild1)    
             else:
                 if conChild2:
                     con1.add_relation(conChild2,rel)
-                    concepts.append(conChild2)
+                    m_concepts.append(conChild2)
                 else:
                     con1.add_relation(con2,rel)     
 
-            concepts.append(con1)
-            concepts.append(con2)
+            s_concepts.append(con1)
+            s_concepts.append(con2)
 
-        return set(concepts)
+        self.single_concepts = self.single_concepts.union(set(s_concepts))
+        self.multi_concepts = self.multi_concepts.union(set(m_concepts))
 
 
     def comp(self, synsets1, synsets2):

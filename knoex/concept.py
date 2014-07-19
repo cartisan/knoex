@@ -69,9 +69,16 @@ class Concept(object):
     	tripels = []
     	if self.hypernyms:
     		for hyper in self.hypernyms:
+    			print hyper
     			tripels.append((' '.join(self.name),'is_a',' '.join(hyper.name)))
     	elif self.synset:
     		for hyper in self.synset.hypernyms():
-    			tripels.append((' '.join(self.name),'is_a',' '.join([hyper.name.split('.')[0]])))		
+    			tripels.append((' '.join(self.name),'is_a',' '.join([hyper.name.split('.')[0]])))
+    	if self.relations:
+    		for relation in self.relations:
+    			print relation
+
+    			tripels.append((' '.join(self.name),relation[1],' '.join(relation[0].name)))				
     	
+
     	return tripels

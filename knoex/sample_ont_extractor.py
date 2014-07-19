@@ -7,12 +7,21 @@ import utils
 
 c = CorpusReader("corpora/snakes.corp")
 text = c.get_corpus()
+sentence1 = "the mouse eats the snake."
+sentence2 = "Leon kills the mouse."
+
 
 term_extractor = C_NC_TermExtractor(text)
 terms = term_extractor.compute_cnc()
 
+tripel1 = RelationExtractor.find_realation(sentence1)
+tripel2 = RelationExtractor.find_realation(sentence2)
 former = ConceptFormer()
 former.form_concepts(terms)
+tripels = []
+tripels+=list(tripel1)
+tripels+=list(tripel2)
+former.find_hearst_concepts(tripels)
 #pprint(former.get_taxonomy())
 tripels = [tripel for concept in list(former.get_taxonomy())
            for tripel in concept.make_tripels()]
