@@ -1,3 +1,4 @@
+import re
 import os
 import sys
 import ctypes
@@ -9,7 +10,7 @@ from nltk.tokenize import sent_tokenize
 from stat_parser import parser as s_parser
 from os.path import expanduser
 from random import randint
-
+from subprocess import Popen, STDOUT, PIPE
 
 def pos_tag(text, simple=False):
     """ Tokenizes a given text and determines the pos-tags. Lowercases
@@ -70,13 +71,16 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
     if parser == 'stanford':
 
         if path_to_parser == None :
-            path_to_parser = module_path + '/stanford_parser'
-        elif path_to_parser[-1] == '/' :
+            if sys.platform == 'win32':
+                path_to_parser = module_path + '\stanford_parser'
+            else:
+                path_to_parser = module_path + '/stanford_parser'
+        elif path_to_parser[-1] == '/':
             path_to_parser = path_to_parser[:-1]
 
         # saves the sentence in a temporary file
         #tmp_file = '~/stanfordtemp_' + str(tid)
-        tmp_file = 'stanfordtemp_' + str(tid)
+        tmp_file = module_path + '\\stanfordtemp_' + str(tid)
         f = open(tmp_file, 'w')
         f.write(sentence)
         f.close()
@@ -84,28 +88,34 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
 
         # calles the stanford parser and outputs string representation of parse tree
         if sys.platform == 'win32':
-            parser_out = os.popen(path_to_parser + "//lexparser.bat " + tmp_file).readlines()
+            cmd = path_to_parser + "\lexparser.bat " + tmp_file
+            sub = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT, cwd=path_to_parser)
+            parser_out = sub.stdout.read()
         else:
             parser_out = os.popen(path_to_parser + "/lexparser.sh " + tmp_file).readlines()
 
+        print "parser_out: ", parser_out
         os.remove(tmp_file)
 
-        #print parser_out
-
         # transform the stanford parse tree representation into nltk parse tree representation
-        parse_trees_text=[]
-        tree = ""
-        for line in parser_out:
-            if line.isspace():
-                parse_trees_text.append(tree)
-                tree = ""
-            elif "(. ...))" in line:
-                #print "YES"
-                tree = tree + ')'
-                parse_trees_text.append(tree)
-                tree = ""
-            else:
-                tree = tree + line
+        if sys.platform == 'win32':
+            regex = re.compile("\(ROOT.*\)\)", re.DOTALL)
+            parse_trees_text = regex.findall(parser_out)
+            parse_trees_text.append("Win doesn't extract second tree yet")
+        else:
+            parse_trees_text=[]
+            tree = ""
+            for line in parser_out:
+                if line.isspace():
+                    parse_trees_text.append(tree)
+                    tree = ""
+                elif "(. ...))" in line:
+                    #print "YES"
+                    tree = tree + ')'
+                    parse_trees_text.append(tree)
+                    tree = ""
+                else:
+                    tree = tree + line
 
         # neglect parse_trees_text[1] at this point
         #print 'tree', tree
