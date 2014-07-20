@@ -1,4 +1,4 @@
-from math import log
+from math import log, ceil
 from collections import defaultdict
 import operator
 import nltk
@@ -85,7 +85,10 @@ class C_NC_TermExtractor(object):
         self.nc_values.sort(key=lambda x: x[1], reverse=True)
 
         return [Term(word) for word, nc in
-                self.nc_values[:int(TERM_PERCENTAGE * len(self.nc_values))]]
+                self.nc_values[:self.term_number()]]
+
+    def term_number(self):
+        return int(ceil(TERM_PERCENTAGE * len(self.nc_values)))
 
     def extract_context(self, ngram):
         """ Takes an ngram and retrieves the context for all
