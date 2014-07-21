@@ -88,7 +88,7 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None, return_depe
         os.remove(tmp_file)
 
         # transform the stanford parse tree representation into nltk parse tree representation
-#        if sys.platform == 'win32':
+        # if sys.platform == 'win32':
         regex = re.compile("\(ROOT.*\)\)", re.DOTALL)
         parse_trees_text = regex.findall(parser_out)
         parse_trees_text.append("We doesn't extract second tree yet")
@@ -99,7 +99,7 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None, return_depe
         if return_dependency :
             dependency = stanford_dependency_representation_to_triplets(parse_trees_text[1])
         print
-        print 'PT0', parse_trees_text[0]
+        #print 'PT0', parse_trees_text[0]
     
     elif parser == 'berkeley' :
         print 'run berkeley parser'

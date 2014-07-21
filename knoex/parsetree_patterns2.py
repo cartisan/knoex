@@ -1,4 +1,4 @@
-from nltk import Tree
+from nltk import Tree, sent_tokenize
 import utils
 
 #pattern_dict = {}
@@ -52,11 +52,11 @@ def match_tree(tree, pattern_dict):
     if type(tree) != Tree :
         return [], tree
 
-    #print 'pos', 2
+    #print 'pos', 2, tree.node
 
     # if pattern does not match
     if tree.node not in pattern_dict :
-        print 'not in', tree.node, tree.leaves()
+        #print 'not in', tree.node, tree.leaves()
         o = '_'.join(tree.leaves())
         return [],o
 
@@ -88,13 +88,13 @@ def match_tree(tree, pattern_dict):
         index = -1
         for i,pattern in enumerate(pattern_list):
             if pattern == children_list :
-                print 'match', pattern
+                #print 'match', pattern
                 index = i
                 break
 
         # if pattern does not match 
         if index == -1 :
-            print 'no match'
+            print 'no match for' + str(children_list)
             o = '_'.join(tree.leaves())
             return [],o
 
@@ -108,7 +108,7 @@ def match_tree(tree, pattern_dict):
                     rel[i] = tree[sem[i]]
                 elif type(sem[i]) == str: 
                     rel[i] = sem[i]
-                print 'reli', rel[i], rel
+                #print 'reli', rel[i], rel
             relations += [rel]
         
         # replace subtrees
@@ -118,41 +118,96 @@ def match_tree(tree, pattern_dict):
                 new_relations, outnode = match_tree(rel[i],pattern_dict)
                 rel[i] = outnode
                 sub_relations += new_relations
-                if i == outnodes_list[index] :
-                    global_outnode = outnode
+                #if i == outnodes_list[index] :
+                #    global_outnode = outnode
         relations += sub_relations
 
-        return relations, global_outnode
+        # determine outnode
+        i = outnodes_list[index]
+        _, outnode = match_tree(tree[i],pattern_dict)
+
+        return relations, outnode
                 
 
 if __name__ == '__main__':
 
     import preprocessor as pp
     import os
+    import sys
 
-    pattern_dict = load_pattern_list()
+    parser = 'stanford'
+    graph = []
+    count = 0
+    s = raw_input('S [' + str(count) + ']: ')
+    show = 2
+    while s != 'end':
+        if s == '':
+            s = raw_input('S [' + str(count) + ']: ')
+            continue
+        if s == 'clear':
+            graph = []
+            print '>>> graph has been cleared <<<'
+            s = raw_input('S [' + str(count) + ']: ')
+            continue
+        if s == 'switch':
+            if parser == 'stanford' :
+                parser = 'berkeley'
+            elif parser == 'berkeley' :
+                parser = 'stat'
+            else :
+                parser = 'stanford'
+            print '>>> parser set to', parser,'<<<'
+            s = raw_input('S [' + str(count) + ']: ')
+            continue
+        if s == 'show':
+            if show == 2:
+                print '>>> show off <<<'
+                show = 0
+            elif show == 0:
+                print '>>> show only graph <<<'
+                show = 1
+            else :
+                print '>>> show graph and parsetrees <<<'
+                show = 2
+            s = raw_input('S [' + str(count) + ']: ')
+            continue
+        else :
+            print "====================================================================="
 
-    for i in pattern_dict.items() :
-        print i
-    raw_input()
+        pattern_dict = load_pattern_list()
 
-    #s = "The Anaconda, or Water Boa, is one the world's largest snakes, when born they can be 3 feet (1m) long."
-    s = "I am awesome."
-    tree, dep = pp.parse_sentence(s,'stanford',None,True)
-    tree = tree[0]
-    #tree = Tree('S', [Tree('NP', [Tree('NNP', ['Leon'])]), Tree('VP', [Tree('VBZ', ['hits']), Tree('NP', [Tree('NNP', ['Kai'])])]), Tree('.', ['.'])])
-    
-    path = utils.get_knoex_path()
-    dot_code = utils.nltk_tree_to_dot(tree)
-    utils.dot_to_image(dot_code, 'temptree_stanford')
-    os.popen('gnome-open ' + 'temptree_stanford.png')
+        #for i in pattern_dict.items() :
+        #    print i
+        #raw_input()
 
-    graph,_ = match_tree(tree, pattern_dict)
-    print graph
-    
-    dot_code = utils.list_of_tripels_to_dot(graph)
-    utils.dot_to_image(dot_code, 'tempgraph_stanford')
+        #s = "The Anaconda, or Water Boa, is one the world's largest snakes, when born they can be 3 feet (1m) long."
+        #s = ' '.join(sys.argv[1:])
+        
+        sentences = sent_tokenize(s)
+        for s in sentences:
+            count+=1
+            tree = pp.parse_sentence(s,parser)
+            tree = tree[0]
+            #tree = Tree('S', [Tree('NP', [Tree('NNP', ['Leon'])]), Tree('VP', [Tree('VBZ', ['hits']), Tree('NP', [Tree('NNP', ['Kai'])])]), Tree('.', ['.'])])
+            
+            path = utils.get_knoex_path()
+            dot_code = utils.nltk_tree_to_dot(tree)
+            utils.dot_to_image(dot_code, 'temptree_'+str(count))
+            if show == 2:
+                os.popen('gnome-open ' + 'temptree_'+str(count)+'.png')
 
-    os.popen('gnome-open ' + 'tempgraph_stanford.png')
+            g,_ = match_tree(tree, pattern_dict)
+            graph += g
+
+        while ['','',''] in graph:
+            graph.remove(['','',''])
+        print graph
+        
+        dot_code = utils.list_of_tripels_to_dot_fancy(graph)
+        utils.dot_to_image(dot_code, 'tempgraph')
+
+        if show :
+            os.popen('gnome-open ' + 'tempgraph.png')
+        s = raw_input('S [' + str(count) + ']: ')
 
 

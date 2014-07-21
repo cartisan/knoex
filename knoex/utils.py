@@ -66,6 +66,32 @@ def list_of_tripels_to_dot(tripel_list):
     return dot_code + '}'
 
 
+def list_of_tripels_to_dot_fancy(tripel_list):
+    dot_code = 'digraph graphname {\n'
+    dot_code += 'rankdir=LR\n'
+    dot_code += 'node [shape=box]\n'
+
+    node_shape_list = []
+    for i,tripel in enumerate(tripel_list) :
+        if tripel[1] == 'to_verb' :
+            node_shape_list.append(tripel[2] + ' [shape=diamond]')
+            tripel_list[i] = (tripel[0],'',tripel[2])
+        elif tripel[1] == 'from_verb' :
+            node_shape_list.append(tripel[0] + ' [shape=diamond]')
+            tripel_list[i] = (tripel[0],'',tripel[2])
+        elif tripel[1] == 'property_of' :
+            node_shape_list.append(tripel[0] + ' [shape=egg]')
+    
+    for s in set(node_shape_list) :
+        dot_code += s+'\n'
+
+    dot_code += build_triple_code(tripel_list)
+
+    
+
+    return dot_code + '}'
+
+
 def taxonomy_to_dot(concepts, relations):
     dot_code = 'digraph graphname {\n'
     for concept in concepts:
