@@ -17,19 +17,23 @@ def load_pattern_list():
         if line.strip() == '' :
             continue
 
-        head, pat, sem, out = line.split('|')
+        head, pat, sems, out = line.split('|')
         head = head.strip()
         pat = [p for p in pat.split() if p!='']
         
-        sem = sem.split(',')
-        for i in range(len(sem)):
-            sem[i] = sem[i].strip()
-            if sem[i] == '' :
-                sem[i]=None
-            else :
-                if sem[i].isdigit() :
-                    sem[i]=int(sem[i])
-        sem = [tuple(sem)]
+        sems = sems.split(';')
+        for j,sem in enumerate(sems):
+            sem = sem.split(',')
+            for i in range(len(sem)):
+                sem[i] = sem[i].strip()
+                if sem[i] == '' :
+                    sem[i]=None
+                else :
+                    if sem[i].isdigit() :
+                        sem[i]=int(sem[i])
+            sem = tuple(sem)
+            sems[j] = sem
+        sem = sems
         out = int(out.strip())
 
         if head in pattern_dict :
@@ -130,10 +134,10 @@ if __name__ == '__main__':
 
     for i in pattern_dict.items() :
         print i
-    #raw_input()
+    raw_input()
 
-    s = 'The happy girl hits Leon.'
-
+    #s = "The Anaconda, or Water Boa, is one the world's largest snakes, when born they can be 3 feet (1m) long."
+    s = "I am awesome."
     tree, dep = pp.parse_sentence(s,'stanford',None,True)
     tree = tree[0]
     #tree = Tree('S', [Tree('NP', [Tree('NNP', ['Leon'])]), Tree('VP', [Tree('VBZ', ['hits']), Tree('NP', [Tree('NNP', ['Kai'])])]), Tree('.', ['.'])])
@@ -145,7 +149,7 @@ if __name__ == '__main__':
 
     graph,_ = match_tree(tree, pattern_dict)
     print graph
-    raw_input()
+    
     dot_code = utils.list_of_tripels_to_dot(graph)
     utils.dot_to_image(dot_code, 'tempgraph_stanford')
 
