@@ -138,7 +138,7 @@ class C_NC_TermExtractor(object):
         context = defaultdict(lambda: 0)
         for occurrance in offsets:
             if (occurrance[0] - 1 >= 0 and
-                    occurrance[-1] + 1 <= self.word_count):
+                    occurrance[-1] + 1 < self.word_count):
                 pre = self.pos_tags[occurrance[0]-1]
                 post = self.pos_tags[occurrance[-1]+1]
                 for token in [pre, post]:

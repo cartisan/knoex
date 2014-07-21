@@ -2,15 +2,14 @@ import re
 import os
 import sys
 import ctypes
-from nltk import download
-from nltk import word_tokenize, Tree
-from nltk import pos_tag as nltk_pos_tag
+from nltk import Tree
 from nltk.tag.simplify import simplify_wsj_tag
-from nltk.tokenize import sent_tokenize
 from stat_parser import parser as s_parser
 from os.path import expanduser
 from random import randint
 from subprocess import Popen, STDOUT, PIPE
+from textblob import TextBlob
+
 
 def pos_tag(text, simple=False):
     """ Tokenizes a given text and determines the pos-tags. Lowercases
@@ -24,21 +23,8 @@ def pos_tag(text, simple=False):
         list of tuples of form (token, pos-tag)
     """
 
-    # tokenize to sentences, then to tokens
-    try:
-        tokens = [token.lower() for sen in sent_tokenize(text)
-                  for token in word_tokenize(sen)]
-    except LookupError:
-        download("punkt")
-        tokens = [token.lower() for sen in sent_tokenize(text)
-                  for token in word_tokenize(sen)]
-
-    # generate pos-tags
-    try:
-        pos = nltk_pos_tag(tokens)
-    except LookupError:
-        download('maxent_treebank_pos_tagger')
-        pos = nltk_pos_tag(tokens)
+    blob = TextBlob(text.lower())
+    pos = blob.tags
 
     # simplify tags if requested
     if simple:

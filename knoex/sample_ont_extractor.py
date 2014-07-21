@@ -31,8 +31,7 @@ for concept in list(former.get_taxonomy()):
     concepts.append(" ".join(concept.name))
     relations += concept.make_tripels()
 
-print "Relations"
-pprint(tripels)
+print "no con.: " + str(len(concepts))
+print "no rel.: " + str(len(relations))
+
 utils.dot_to_image(utils.taxonomy_to_dot(concepts, relations), 'snake')
-#relations = RelationExtractor.find_realation(text)
-#print relations
