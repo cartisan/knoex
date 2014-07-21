@@ -53,7 +53,7 @@ def pos_tag(text, simple=False):
     return pos
 
 
-def parse_sentence(sentence, parser='stanford', path_to_parser=None):
+def parse_sentence(sentence, parser='stanford', path_to_parser=None, return_dependency=False):
 
     abs_path = os.path.abspath(__file__)
     module_path = os.path.dirname(abs_path)
@@ -102,6 +102,8 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
         # neglect parse_trees_text[1] at this point
         #print 'tree', tree
         parse_tree = Tree(parse_trees_text[0])
+        if return_dependency :
+            dependency = stanford_dependency_representation_to_triplets(parse_trees_text[1])
         print
         print 'PT0', parse_trees_text[0]
         print
@@ -109,7 +111,7 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
         print
 	
     elif parser == 'berkeley' :
-        
+        print 'run berkeley parser'
         if path_to_parser == None :
             path_to_parser = module_path + '/berkeley_parser/'
         elif path_to_parser[-1] != '/' :
@@ -139,4 +141,21 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
         print 'No such parser:', parser
         parse_tree = None
 
-    return parse_tree   
+    if return_dependency :
+        return parse_tree, dependency
+    else:
+        return parse_tree   
+
+
+def stanford_dependency_representation_to_triplets(dep_rep):
+    dep_rep = dep_rep.split('\n')
+    list_of_rel = []
+    for d in dep_rep :
+        if d.strip() == '' :
+            continue
+        pred, tup = d.split('(')
+        left, right = tup.split(',')
+        left = left[:-2]
+        right = right[1:-3]
+        list_of_rel.append((left,pred,right))
+    return list_of_rel

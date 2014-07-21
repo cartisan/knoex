@@ -38,7 +38,6 @@ class ParseTree:
 		self.nt_dict = nt_dict
 		self.nodepaths = nodepaths
 
-
 	# returns a list of nodes that can be next to the argument node
 	def next_to(self, nodepath='start'):
 		# find next anchestrial sibling
@@ -64,13 +63,11 @@ class ParseTree:
 
 		return next_to_list
 
-
 	def get_subtree(self, nodepath):
 		ac_node = self.tree
 		for i in nodepath :
 			ac_node = ac_node[i]
 		return ac_node
-
 
 	def get_node(self, nodepath):
 		sub = self.get_subtree(nodepath)
@@ -92,7 +89,6 @@ def match(pattern, parsetree):
 	def match_(pattern, nodepath, parsetree):
 
 		if len(pattern) == 0 :
-			print 'matched', nodepath
 			return [[]]
 
 		token_matches = parsetree.nt_dict[pattern[0]]
@@ -115,12 +111,19 @@ def match_to_terminals(match, parsetree):
 		list_.append(parsetree.get_terminals(path))
 	return list_
 
+def match_to_nodes(match, parsetree):
+	list_ = []
+	for path in match :
+		list_.append(parsetree.get_node(path))
+	return list_
+
+
 def match_to_joined_terminals(match, parsetree):
 	list_ = []
 	for path in match :
 		list_.append(join(parsetree.get_terminals(path)))
 	return list_
-		
+	
 
 def intersect(l1,l2):
 	s = set(l1).intersection(set(l2))

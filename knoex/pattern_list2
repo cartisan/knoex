@@ -1,0 +1,4 @@
+S | NP VP . | 0,,1 | 0
+VP | VBZ NP | 0,,1 | 0
+VP | VBD NP | 0,,1 | 0
+NP | DT JJ NN | 1,propery_of,2 | 2

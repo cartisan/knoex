@@ -85,3 +85,7 @@ def which(program):
                 return exe_file
 
     return None
+
+def get_knoex_path():
+    abs_path = os.path.abspath(__file__)
+    return os.path.dirname(abs_path) + '/'

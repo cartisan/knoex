@@ -25,7 +25,8 @@ def all_parsing_combinations(tree):
     combis.append([tree.node])
 
     return combis
-    
+
+
 # Numerates same named non-terminals in parse tress
 def numerate_non_terminals(tree, num_dict=None):
     if num_dict == None :

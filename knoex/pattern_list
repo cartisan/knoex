@@ -1,0 +1,2 @@
+NP VBZ NP -> np_vbz_np
+NP VBZ NP PP -> np_vbz_np_pp
