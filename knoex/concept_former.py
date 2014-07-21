@@ -10,8 +10,8 @@ setup_nltk_resources(['wordnet'])
 
 class conceptFormer(object):
     def __init__(self):
-        self.multi_concepts = None
-        self.single_concepts = None
+        self.multi_concepts = set([])
+        self.single_concepts = set([])
 
     def get_taxonomy(self):
         if self.multi_concepts and self.single_concepts:
@@ -22,8 +22,8 @@ class conceptFormer(object):
             return self.single_concepts
         return set([])
 
-    def lookUp(self,term,pos):
-        # takes a term and a part of speech tag 
+    def lookUp(self, term, pos):
+        # takes a term and a part of speech tag
         # and looks up the synsets in Wordnet
 
         pos = self.pos_tag(pos)
@@ -71,18 +71,19 @@ class conceptFormer(object):
             if synsets:
                 sets.append(synsets)
 
-        easies = self.get_easies(sets)
-        rest = [x for x in sets if not x in easies]
-        concepts = self.compare_easies(easies)
-        concepts = self.compare_concepts(concepts, rest)
+        if sets:
+            easies = self.get_easies(sets)
+            rest = [x for x in sets if not x in easies]
+            concepts = self.compare_easies(easies)
+            concepts = self.compare_concepts(concepts, rest)
 
-        for (mult, con) in itertools.product(multiwords,concepts):
-                if str(con.get_term()) == str(mult.get_term()):
-                    mult.add_hypernym(con)
-                    con.add_hyponym(mult)
+            for (mult, con) in itertools.product(multiwords, concepts):
+                    if str(con.get_term()) == str(mult.get_term()):
+                        mult.add_hypernym(con)
+                        con.add_hyponym(mult)
 
+            self.single_concepts = set(concepts)
         self.multi_concepts = set(multiwords)
-        self.single_concepts = set(concepts) 
 
     def compare_concepts(self, concepts, rest):
         #Compares already found concepts to possible synsts for each term
@@ -211,9 +212,7 @@ class conceptFormer(object):
         self.single_concepts = self.single_concepts.union(set(s_concepts))
         self.multi_concepts = self.multi_concepts.union(set(m_concepts))
 
-
     def comp(self, synsets1, synsets2):
-
         similarity = 0
         for (try1,try2) in [(try1,try2) for try1 in synsets1 for try2 in synsets2]:
             newsimilarity = try1.path_similarity(try2)

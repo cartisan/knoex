@@ -60,6 +60,16 @@ def list_of_tripels_to_dot(tripel_list):
     return dot_code + '}'
 
 
+def taxonomy_to_dot(concepts, relations):
+    dot_code = 'digraph graphname {\n'
+    for concept in concepts:
+        dot_code += '"' + concept + '"\n'
+
+    for tripel in relations:
+        dot_code += '"' + tripel[0] + '" -> "' + tripel[2] + '" [label="'+ tripel[1] + '"]\n'
+    return dot_code + '}'
+
+
 def dot_to_image(dot_code, name) :
     tmp_file = 'temp.dot'
     f = open(tmp_file, 'w')
