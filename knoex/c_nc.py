@@ -1,4 +1,4 @@
-from math import log
+from math import log, ceil
 from collections import defaultdict
 import operator
 import nltk
@@ -11,7 +11,7 @@ from term import Term
 # TODO: Get this constants into the class to make it modifyable
 MULTI_TERM_PARSER = nltk.RegexpParser('CHUNK: {<N|ADJ>*<N>}')
 CONTEXT_TYPES = ["V", "N", "ADJ"]
-THRESHOLD = 0  # completly arbitrary threshold on c and nc_values
+TERM_PERCENTAGE = 0.1
 
 
 class C_NC_TermExtractor(object):
@@ -84,9 +84,11 @@ class C_NC_TermExtractor(object):
 
         self.nc_values.sort(key=lambda x: x[1], reverse=True)
 
-        # naive choice on term selection
-        # TODO: Logik auslagern und mit multi_term/1 vereinigen
-        return [Term(word) for word, nc in self.nc_values if nc > THRESHOLD]
+        return [Term(word) for word, nc in
+                self.nc_values[:self.term_number()]]
+
+    def term_number(self):
+        return int(ceil(TERM_PERCENTAGE * len(self.nc_values)))
 
     def extract_context(self, ngram):
         """ Takes an ngram and retrieves the context for all
@@ -136,7 +138,7 @@ class C_NC_TermExtractor(object):
         context = defaultdict(lambda: 0)
         for occurrance in offsets:
             if (occurrance[0] - 1 >= 0 and
-                    occurrance[-1] + 1 <= self.word_count):
+                    occurrance[-1] + 1 < self.word_count):
                 pre = self.pos_tags[occurrance[0]-1]
                 post = self.pos_tags[occurrance[-1]+1]
                 for token in [pre, post]:
@@ -206,12 +208,6 @@ class C_NC_TermExtractor(object):
             return ngram[0]
         return " ".join(zip(*ngram)[0])
 
-    def multi_word_terms(self, metric='nc'):
-        metric += "_values"  # potential security breach
-        terms = getattr(self, metric, [])
-        return [word for word, nc_value in terms if nc_value > THRESHOLD]
-
-
     def _compute_c_value(self, ngram, max_n):
         ngram_text = self.text_from_tagged_ngram(ngram)
         len_ngram = len(ngram)
@@ -235,12 +231,18 @@ def test_snakes():
     from corpus import CorpusReader
     from pprint import pprint
 
-    c = CorpusReader("corpora/snakes.corp")
+    c = CorpusReader("knoex/corpora/snakes.corp")
 
     text = c.get_corpus()
     extractor = C_NC_TermExtractor(text)
-    pprint(extractor.compute_cnc())
-    pprint(extractor.__dict__)
+    extractor.compute_cnc()
+    #pprint(extractor.compute_cnc())
+    #pprint(extractor.__dict__)
+    pprint([(word, nc_val) for word, nc_val in
+            extractor.nc_values[:int(TERM_PERCENTAGE * len(extractor.nc_values))]])
+    print "\n###################################\n"
+    pprint([(word, c_val) for word, c_val in
+            extractor.c_values[:int(TERM_PERCENTAGE * len(extractor.c_values))]])
 
 
 def test_execution():

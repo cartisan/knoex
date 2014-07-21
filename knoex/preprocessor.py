@@ -1,13 +1,14 @@
-import os, ctypes
-from nltk import download
-from utils import setup_nltk_resources
-from nltk import word_tokenize, Tree
-from nltk import pos_tag as nltk_pos_tag
+import re
+import os
+import sys
+import ctypes
+from nltk import Tree
 from nltk.tag.simplify import simplify_wsj_tag
-from nltk.tokenize import sent_tokenize
 from stat_parser import parser as s_parser
 from os.path import expanduser
 from random import randint
+from subprocess import Popen, STDOUT, PIPE
+from textblob import TextBlob
 
 
 def pos_tag(text, simple=False):
@@ -22,21 +23,8 @@ def pos_tag(text, simple=False):
         list of tuples of form (token, pos-tag)
     """
 
-    # tokenize to sentences, then to tokens
-    try:
-        tokens = [token.lower() for sen in sent_tokenize(text)
-                  for token in word_tokenize(sen)]
-    except LookupError:
-        download("punkt")
-        tokens = [token.lower() for sen in sent_tokenize(text)
-                  for token in word_tokenize(sen)]
-
-    # generate pos-tags
-    try:
-        pos = nltk_pos_tag(tokens)
-    except LookupError:
-        download('maxent_treebank_pos_tagger')
-        pos = nltk_pos_tag(tokens)
+    blob = TextBlob(text.lower())
+    pos = blob.tags
 
     # simplify tags if requested
     if simple:
@@ -57,7 +45,7 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None, return_depe
 
     abs_path = os.path.abspath(__file__)
     module_path = os.path.dirname(abs_path)
-    
+
     #print 'module_path', module_path
 
     # get the current process_id to run parser in multiple processes
@@ -69,35 +57,41 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None, return_depe
     if parser == 'stanford':
 
         if path_to_parser == None :
-            path_to_parser = module_path + '/stanford_parser'
-        elif path_to_parser[-1] == '/' :
+            if sys.platform == 'win32':
+                path_to_parser = module_path + '\stanford_parser'
+            else:
+                path_to_parser = module_path + '/stanford_parser'
+        elif path_to_parser[-1] == '/':
             path_to_parser = path_to_parser[:-1]
 
         # saves the sentence in a temporary file
-        tmp_file = '~/stanfordtemp_' + str(tid)
-        os.popen("echo '" + sentence + "' > " + tmp_file)
+        #tmp_file = '~/stanfordtemp_' + str(tid)
+        if sys.platform == 'win32':
+            tmp_file = module_path + '\\stanfordtemp_' + str(tid)
+        else:
+            tmp_file = module_path + '/stanfordtemp_' + str(tid)   
+        f = open(tmp_file, 'w')
+        f.write(sentence)
+        f.close()
+        #os.popen("echo '" + sentence + "' > " + tmp_file)
 
         # calles the stanford parser and outputs string representation of parse tree
-        parser_out = os.popen(path_to_parser + "/lexparser.sh " + tmp_file).readlines()
-        home = expanduser("~")
-        os.remove(home + tmp_file[1:])
+        if sys.platform == 'win32':
+            cmd = path_to_parser + "\lexparser.bat " + tmp_file
+            sub = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT, cwd=path_to_parser)
+            parser_out = sub.stdout.read()
 
-        #print parser_out
+        else:
+            cmd = path_to_parser + "/lexparser.sh " + tmp_file
+            parser_out = "\n".join(os.popen(cmd).readlines())
+
+        os.remove(tmp_file)
 
         # transform the stanford parse tree representation into nltk parse tree representation
-        parse_trees_text=[]
-        tree = ""
-        for line in parser_out:
-            if line.isspace():
-                parse_trees_text.append(tree)
-                tree = ""
-            elif "(. ...))" in line:
-                #print "YES"
-                tree = tree + ')'
-                parse_trees_text.append(tree)
-                tree = ""
-            else:
-                tree = tree + line
+#        if sys.platform == 'win32':
+        regex = re.compile("\(ROOT.*\)\)", re.DOTALL)
+        parse_trees_text = regex.findall(parser_out)
+        parse_trees_text.append("We doesn't extract second tree yet")
 
         # neglect parse_trees_text[1] at this point
         #print 'tree', tree
@@ -106,10 +100,7 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None, return_depe
             dependency = stanford_dependency_representation_to_triplets(parse_trees_text[1])
         print
         print 'PT0', parse_trees_text[0]
-        print
-        print 'PT1', parse_trees_text[1]
-        print
-	
+    
     elif parser == 'berkeley' :
         print 'run berkeley parser'
         if path_to_parser == None :

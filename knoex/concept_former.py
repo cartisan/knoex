@@ -3,13 +3,39 @@ from nltk.corpus import wordnet as wn
 import concept
 from term import Term
 import preprocessor
+import itertools
 
 setup_nltk_resources(['wordnet'])
 
 
 class conceptFormer(object):
     def __init__(self):
-        pass
+        self.multi_concepts = set([])
+        self.single_concepts = set([])
+        self.concept_store = dict()  # maps concept -> concept
+
+    def get_concept(self, concept):
+        """ Checks if concept is already stored and returns the stored one
+        in this case, otherwise stores the concept and returns it afterwards.
+        Equality on concepts is defined in concept.Concept. Two concepts are
+        equal if they have the same synset or if they consist of the same
+        multi-term other wise.
+        Thus this method makes sure that new relations are added to stored
+        concepts and not end up in two equal instances."""
+
+        if not concept in self.concept_store:
+            self.concept_store[concept] = concept
+
+        return self.concept_store[concept]
+
+    def get_taxonomy(self):
+        if self.multi_concepts and self.single_concepts:
+            return self.multi_concepts.union(self.single_concepts)
+        if self.multi_concepts:
+            return self.multi_concepts
+        if self.single_concepts:
+            return self.single_concepts
+        return set([])
 
     def lookUp(self, term, pos):
         # takes a term and a part of speech tag
@@ -24,6 +50,7 @@ class conceptFormer(object):
             print\
                 'Concept Former: No concept found for "{}"'.format(term)
 
+
     def form_concepts(self, terms):
         """
         Takes a list of term objects and returns
@@ -31,23 +58,22 @@ class conceptFormer(object):
         comparing possible candidates.
         """
         nouns = [t for t in terms if t.get_head()[1]=='N']
-        verbs = [t for t in terms if t.get_head()[1]=='V']
-        adjectives = [t for t in terms if t.get_head()[1]=='ADJ']
+        #verbs = [t for t in terms if t.get_head()[1]=='V']
+        #adjectives = [t for t in terms if t.get_head()[1]=='ADJ']
 
-        concepts = []
-        if nouns:
-            concepts.append(self.form(nouns))
-        if verbs:
-            concepts.append(self.form(verbs))
-        if adjectives:
-            concepts.append(self.form(adjectives))
+        #concepts = []
+        #if nouns:
+        #   concepts += 
+        self.form(nouns)
+        #if verbs:
+        #    concepts += self.form(verbs)
+        #if adjectives:
+        #    concepts += self.form(adjectives)
 
-        concepts = [item for sublist in concepts for item in sublist]
-        return set(concepts)
+        #return set(concepts)
 
     def form(self, terms):
         #actual formation
-
         sets = []
         multiwords = []
 
@@ -55,22 +81,27 @@ class conceptFormer(object):
         #with the head-term
         for term in terms:
             if len(term.get_terms()) > 1:
-                multiwords.append(concept.Concept(name=term.get_terms(), term=term.get_head()[0]))
+                con = self.get_concept(
+                    concept.Concept(name=term.get_terms(), term=term.get_head()[0])
+                )
+                multiwords.append(con)
             synsets = self.lookUp(term.get_head()[0], term.get_head()[1])
             if synsets:
                 sets.append(synsets)
 
-        easies = self.get_easies(sets)
-        rest = [x for x in sets if not x in easies]
-        concepts = self.compare_easies(easies)
-        concepts = self.compare_concepts(concepts, rest)
+        if sets:
+            easies = self.get_easies(sets)
+            rest = [x for x in sets if not x in easies]
+            concepts = self.compare_easies(easies)
+            concepts = self.compare_concepts(concepts, rest)
 
-        for (mult, con) in [(mult, con) for con in concepts for mult in multiwords]:
-                if str(con.get_term()) == str(mult.get_term()):
-                    mult.add_relation(con, 'hypernym')
-                    con.add_relation(mult, 'hyponym')
+            for (mult, con) in itertools.product(multiwords, concepts):
+                    if str(con.get_term()) == str(mult.get_term()):
+                        mult.add_hypernym(con)
+                        con.add_hyponym(mult)
 
-        return concepts 
+            self.single_concepts = set(concepts)
+        self.multi_concepts = set(multiwords)
 
     def compare_concepts(self, concepts, rest):
         #Compares already found concepts to possible synsts for each term
@@ -85,11 +116,14 @@ class conceptFormer(object):
                 for con in conNoTerm:
                     similarity = similarity + possib.path_similarity(con)
                 similarities.append(similarity)
-            concepts.append((synsets[similarities.index(max(similarities))],rest[restNoTerm.index(synsets)][0]))
+            concepts.append((synsets[similarities.index(max(similarities))],
+                            rest[restNoTerm.index(synsets)][1]))
 
         result = []
         for conc in concepts:
-            c = concept.Concept(synset=conc[0],term=conc[1])
+            c = self.get_concept(
+                concept.Concept(synset=conc[0], term=conc[1], name=conc[1])
+            )
             result.append(c)
 
         return result
@@ -100,13 +134,15 @@ class conceptFormer(object):
         #the smallest list
 
         synsets = [x[0] for x in sets]
-        count = self.count_synsets(synsets)
-        indices = [x for x in count if x <= 3]
+        counts = self.count_synsets(synsets)
+        indices = [index for index, count in
+                   enumerate(counts) if count <= 3]
+
         easies = []
         for index in indices:
             easies.append(sets[index])
         if not easies:
-            easies.append(sets[count.index(min(count))])
+            easies.append(sets[counts.index(min(counts))])
         return easies
 
     def count_synsets(self, sets):
@@ -152,35 +188,58 @@ class conceptFormer(object):
         return concepts
 
     def find_hearst_concepts(self, triples):
-        triples = list(triples)
-        pairs = [(tri[0], tri[2]) for tri in triples]
-
-        concepts = []
-        for (t1, t2) in pairs:
+        s_concepts = []
+        m_concepts = []
+        for (t1, rel, t2) in triples:
             term1 = Term(preprocessor.pos_tag(t1, True))
             term2 = Term(preprocessor.pos_tag(t2, True))
 
             synsets1 = wn.synsets(term1.get_head()[0], self.pos_tag(term1.get_head()[1]))
-            synsets2 = wn.synsets(term1.get_head()[0], self.pos_tag(term1.get_head()[1]))
+            synsets2 = wn.synsets(term2.get_head()[0], self.pos_tag(term2.get_head()[1]))
             (best1, best2) = self.comp(synsets1, synsets2)
 
-            con1 = concept.Concept(synset=best1)
-            con2 = concept.Concept(synset=best2)
+            con1 = self.get_concept(
+                concept.Concept(synset=best1, term=term1.get_head()[0])
+            )
+            con2 = self.get_concept(
+                concept.Concept(synset=best2, term=term2.get_head()[0])
+            )
 
+            conChild1 = None
+            conChild2 = None
             if len(term1.get_terms()) > 1:
-                conChild1 = concept.Concept(name=term1.get_terms(),term=term1.get_head()[0])
-                con1.add_relation(con1, 'hypernym')
-                conChild1.add_relation(conChild1, 'hyponym')
+                conChild1 = self.get_concept(
+                    concept.Concept(name=term1.get_terms(), term=term1.get_head()[0])
+                )
+                con1.add_hyponym(conChild1)
+                conChild1.add_hypernym(con1)
+                #m_concepts.append(conChild1)
             if len(term2.get_terms()) > 1:
-                conChild2 = concept.Concept(name=term2.get_terms(),term=term2.get_head()[0])
-                con2.add_relation(con2, 'hypernym')
-                conChild2.add_relation(conChild2, 'hyponym')
+                conChild2 = self.concept(
+                    concept.Concept(name=term2.get_terms(), term=term2.get_head()[0])
+                )
+                con2.add_hyponym(conChild2)
+                conChild2.add_hypernym(con2)
+                #m_concepts.append(conChild2)
 
-            con1.add_relation(triples[1])  # ? - add child or parent ?
-            concepts.append(con1)
-            concepts.append(con2)
+            if conChild1:
+                if conChild2:
+                    conChild1.add_relation(conChild2, rel)
+                else:
+                    conChild1.add_relation(con2, rel)
+                m_concepts.append(conChild1)
+            else:
+                if conChild2:
+                    con1.add_relation(conChild2, rel)
+                    m_concepts.append(conChild2)
+                else:
+                    con1.add_relation(con2, rel)
 
-        return set(concepts)
+            s_concepts.append(con1)
+            s_concepts.append(con2)
+
+        self.single_concepts = self.single_concepts.union(set(s_concepts))
+        self.multi_concepts = self.multi_concepts.union(set(m_concepts))
 
     def comp(self, synsets1, synsets2):
         similarity = 0
