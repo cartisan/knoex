@@ -53,10 +53,16 @@ def nltk_tree_to_dot(tree) :
     return dot_code
 
 
+def build_triple_code(tripel_list):
+    dot_code = ""
+    for tripel in tripel_list:
+        dot_code += '"' + tripel[0] + '" -> "' + tripel[2] + '" [label="'+ tripel[1] + '"]\n'
+    return dot_code
+
+
 def list_of_tripels_to_dot(tripel_list):
     dot_code = 'digraph graphname {\n'
-    for tripel in tripel_list :
-        dot_code += '"' + tripel[0] + '" -> "' + tripel[2] + '" [label="'+ tripel[1] + '"]\n'
+    dot_code += build_triple_code(tripel_list)
     return dot_code + '}'
 
 
@@ -65,8 +71,7 @@ def taxonomy_to_dot(concepts, relations):
     for concept in concepts:
         dot_code += '"' + concept + '"\n'
 
-    for tripel in relations:
-        dot_code += '"' + tripel[0] + '" -> "' + tripel[2] + '" [label="'+ tripel[1] + '"]\n'
+    dot_code += build_triple_code(relations)
     return dot_code + '}'
 
 
