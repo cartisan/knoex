@@ -12,6 +12,21 @@ class conceptFormer(object):
     def __init__(self):
         self.multi_concepts = set([])
         self.single_concepts = set([])
+        self.concept_store = dict()  # maps concept -> concept
+
+    def get_concept(self, concept):
+        """ Checks if concept is already stored and returns the stored one
+        in this case, otherwise stores the concept and returns it afterwards.
+        Equality on concepts is defined in concept.Concept. Two concepts are
+        equal if they have the same synset or if they consist of the same
+        multi-term other wise.
+        Thus this method makes sure that new relations are added to stored
+        concepts and not end up in two equal instances."""
+
+        if not concept in self.concept_store:
+            self.concept_store[concept] = concept
+
+        return self.concept_store[concept]
 
     def get_taxonomy(self):
         if self.multi_concepts and self.single_concepts:
@@ -66,7 +81,10 @@ class conceptFormer(object):
         #with the head-term
         for term in terms:
             if len(term.get_terms()) > 1:
-                multiwords.append(concept.Concept(name=term.get_terms(), term=term.get_head()[0]))
+                con = self.get_concept(
+                    concept.Concept(name=term.get_terms(), term=term.get_head()[0])
+                )
+                multiwords.append(con)
             synsets = self.lookUp(term.get_head()[0], term.get_head()[1])
             if synsets:
                 sets.append(synsets)
@@ -98,11 +116,14 @@ class conceptFormer(object):
                 for con in conNoTerm:
                     similarity = similarity + possib.path_similarity(con)
                 similarities.append(similarity)
-            concepts.append((synsets[similarities.index(max(similarities))],rest[restNoTerm.index(synsets)][1]))
+            concepts.append((synsets[similarities.index(max(similarities))],
+                            rest[restNoTerm.index(synsets)][1]))
 
         result = []
         for conc in concepts:
-            c = concept.Concept(synset=conc[0], term=conc[1], name=conc[1])
+            c = self.get_concept(
+                concept.Concept(synset=conc[0], term=conc[1], name=conc[1])
+            )
             result.append(c)
 
         return result
@@ -177,18 +198,26 @@ class conceptFormer(object):
             synsets2 = wn.synsets(term2.get_head()[0], self.pos_tag(term2.get_head()[1]))
             (best1, best2) = self.comp(synsets1, synsets2)
 
-            con1 = concept.Concept(synset=best1, term=term1.get_head()[0])
-            con2 = concept.Concept(synset=best2, term=term2.get_head()[0])
+            con1 = self.get_concept(
+                concept.Concept(synset=best1, term=term1.get_head()[0])
+            )
+            con2 = self.get_concept(
+                concept.Concept(synset=best2, term=term2.get_head()[0])
+            )
 
             conChild1 = None
             conChild2 = None
             if len(term1.get_terms()) > 1:
-                conChild1 = concept.Concept(name=term1.get_terms(), term=term1.get_head()[0])
+                conChild1 = self.get_concept(
+                    concept.Concept(name=term1.get_terms(), term=term1.get_head()[0])
+                )
                 con1.add_hyponym(conChild1)
                 conChild1.add_hypernym(con1)
                 #m_concepts.append(conChild1)
             if len(term2.get_terms()) > 1:
-                conChild2 = concept.Concept(name=term2.get_terms(), term=term2.get_head()[0])
+                conChild2 = self.concept(
+                    concept.Concept(name=term2.get_terms(), term=term2.get_head()[0])
+                )
                 con2.add_hyponym(conChild2)
                 conChild2.add_hypernym(con2)
                 #m_concepts.append(conChild2)

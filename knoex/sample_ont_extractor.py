@@ -16,14 +16,12 @@ terms = term_extractor.compute_cnc()
 former = ConceptFormer()
 former.form_concepts(terms)
 
-tripel1 = RelationExtractor.find_realation(sentence1)
-tripel2 = RelationExtractor.find_realation(sentence2)
-tripels = []
-tripels += list(tripel1)
-tripels += list(tripel2)
+tripels = list(RelationExtractor.find_realation(text))
+print "Triples: "
+pprint(tripels)
 
 former.find_hearst_concepts(tripels)
-print "Taxonomy"
+print "Taxonomy: "
 pprint(former.get_taxonomy())
 
 concepts, relations = [], []

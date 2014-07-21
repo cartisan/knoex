@@ -27,6 +27,9 @@ class Concept(object):
         return name
 
     def __eq__(self, other):
+        """ Concepts are equal either if the have the same synset or
+        otherwise consistet of the same multi-word term"""
+
         if isinstance(other, Concept):
             return hash(self) == hash(other)
         else:
