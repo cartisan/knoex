@@ -66,7 +66,10 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
 
         # saves the sentence in a temporary file
         #tmp_file = '~/stanfordtemp_' + str(tid)
-        tmp_file = module_path + '\\stanfordtemp_' + str(tid)
+        if sys.platform == 'win32':
+            tmp_file = module_path + '\\stanfordtemp_' + str(tid)
+        else:
+            tmp_file = module_path + '/stanfordtemp_' + str(tid)   
         f = open(tmp_file, 'w')
         f.write(sentence)
         f.close()
@@ -77,37 +80,25 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
             cmd = path_to_parser + "\lexparser.bat " + tmp_file
             sub = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT, cwd=path_to_parser)
             parser_out = sub.stdout.read()
+
         else:
-            parser_out = os.popen(path_to_parser + "/lexparser.sh " + tmp_file).readlines()
+            cmd = path_to_parser + "/lexparser.sh " + tmp_file
+            parser_out = "\n".join(os.popen(cmd).readlines())
 
         os.remove(tmp_file)
 
         # transform the stanford parse tree representation into nltk parse tree representation
-        if sys.platform == 'win32':
-            regex = re.compile("\(ROOT.*\)\)", re.DOTALL)
-            parse_trees_text = regex.findall(parser_out)
-            parse_trees_text.append("Win doesn't extract second tree yet")
-        else:
-            parse_trees_text=[]
-            tree = ""
-            for line in parser_out:
-                if line.isspace():
-                    parse_trees_text.append(tree)
-                    tree = ""
-                elif "(. ...))" in line:
-                    #print "YES"
-                    tree = tree + ')'
-                    parse_trees_text.append(tree)
-                    tree = ""
-                else:
-                    tree = tree + line
+#        if sys.platform == 'win32':
+        regex = re.compile("\(ROOT.*\)\)", re.DOTALL)
+        parse_trees_text = regex.findall(parser_out)
+        parse_trees_text.append("We doesn't extract second tree yet")
 
         # neglect parse_trees_text[1] at this point
         #print 'tree', tree
         parse_tree = Tree(parse_trees_text[0])
         print
         print 'PT0', parse_trees_text[0]
-	
+    
     elif parser == 'berkeley' :
         
         if path_to_parser == None :
