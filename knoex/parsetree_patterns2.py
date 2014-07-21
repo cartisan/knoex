@@ -1,4 +1,5 @@
 from nltk import Tree, sent_tokenize
+from corpus import get_wiki_text
 import utils
 
 #pattern_dict = {}
@@ -171,6 +172,8 @@ if __name__ == '__main__':
                 show = 2
             s = raw_input('S [' + str(count) + ']: ')
             continue
+        if s == 'random':
+            s = get_wiki_text()
         else :
             print "====================================================================="
 
