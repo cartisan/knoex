@@ -179,6 +179,8 @@ class conceptFormer(object):
             con1 = concept.Concept(synset=best1, term=term1.get_head()[0])
             con2 = concept.Concept(synset=best2, term=term2.get_head()[0])
 
+            conChild1 = None
+            conChild2 = None
             if len(term1.get_terms()) > 1:
                 conChild1 = concept.Concept(name=term1.get_terms(), term=term1.get_head()[0])
                 con1.add_hyponym(conChild1)

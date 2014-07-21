@@ -7,7 +7,7 @@ import utils
 
 #c = CorpusReader("corpora/snakes.corp")
 #text = c.get_corpus()
-sentence1 = "The mouse eat the snake."
+sentence1 = "The mouse eats the snake."
 sentence2 = "Leon kills the mouse."
 text = sentence1 + " " + sentence2
 
