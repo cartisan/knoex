@@ -6,7 +6,7 @@ class Concept(object):
         self.hypernyms = []
         self.hyponyms = []
         if synset:
-        	self.name = [self.term]
+            self.name = [self.term]
 
         self.relations = []
 
@@ -42,16 +42,16 @@ class Concept(object):
             return hash(self.name)
 
     def add_relation(self, concept, relation):
-    	if not relation=='is_a':
-        	self.relations.append((concept, relation))
+        if not relation=='is_a':
+            self.relations.append((concept, relation))
 
     def add_hypernym(self,concept):
-    	if not concept in self.hypernyms:
-    		self.hypernyms.append(concept)
+        if not concept in self.hypernyms:
+            self.hypernyms.append(concept)
 
 
     def add_hyponym(self,concept):
-    	self.hyponyms.append(concept)
+        self.hyponyms.append(concept)
 
     def get_term(self):
         return self.term
@@ -63,22 +63,18 @@ class Concept(object):
         return self.hyponyms
 
     def get_relations(self):
-    	return self.relations
+        return self.relations
 
     def make_tripels(self):
-    	tripels = []
-    	if self.hypernyms:
-    		for hyper in self.hypernyms:
-    			print hyper
-    			tripels.append((' '.join(self.name),'is_a',' '.join(hyper.name)))
-    	elif self.synset:
-    		for hyper in self.synset.hypernyms():
-    			tripels.append((' '.join(self.name),'is_a',' '.join([hyper.name.split('.')[0]])))
-    	if self.relations:
-    		for relation in self.relations:
-    			print relation
+        tripels = []
+        if self.hypernyms:
+            for hyper in self.hypernyms:
+                tripels.append((' '.join(self.name), 'is_a', ' '.join(hyper.name)))
+        elif self.synset:
+            for hyper in self.synset.hypernyms():
+                tripels.append((' '.join(self.name), 'is_a', ' '.join([hyper.name.split('.')[0]])))
+        if self.relations:
+            for relation in self.relations:
+                tripels.append((' '.join(self.name),relation[1],' '.join(relation[0].name)))
 
-    			tripels.append((' '.join(self.name),relation[1],' '.join(relation[0].name)))				
-    	
-
-    	return tripels
+        return tripels

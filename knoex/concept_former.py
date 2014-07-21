@@ -9,12 +9,10 @@ setup_nltk_resources(['wordnet'])
 
 
 class conceptFormer(object):
-
-
     def __init__(self):
-          self.multi_concepts = None
-          self.single_concepts = None
-    
+        self.multi_concepts = None
+        self.single_concepts = None
+
     def get_taxonomy(self):
         if self.multi_concepts and self.single_concepts:
             return self.multi_concepts.union(self.single_concepts)
@@ -22,7 +20,7 @@ class conceptFormer(object):
             return self.multi_concepts
         if self.single_concepts:
             return self.single_concepts
-        return set([])        
+        return set([])
 
     def lookUp(self,term,pos):
         # takes a term and a part of speech tag 
@@ -103,7 +101,7 @@ class conceptFormer(object):
 
         result = []
         for conc in concepts:
-            c = concept.Concept(synset=conc[0],term=conc[1])
+            c = concept.Concept(synset=conc[0], term=conc[1], name=conc[1])
             result.append(c)
 
         return result
@@ -168,8 +166,6 @@ class conceptFormer(object):
         return concepts
 
     def find_hearst_concepts(self, triples):
-        
-        print triples
         s_concepts = []
         m_concepts = []
         for (t1, rel, t2) in triples:
@@ -177,35 +173,35 @@ class conceptFormer(object):
             term2 = Term(preprocessor.pos_tag(t2, True))
 
             synsets1 = wn.synsets(term1.get_head()[0], self.pos_tag(term1.get_head()[1]))
-            synsets2 = wn.synsets(term1.get_head()[0], self.pos_tag(term1.get_head()[1]))
+            synsets2 = wn.synsets(term2.get_head()[0], self.pos_tag(term2.get_head()[1]))
             (best1, best2) = self.comp(synsets1, synsets2)
 
-            con1 = concept.Concept(synset=best1)
-            con2 = concept.Concept(synset=best2)
+            con1 = concept.Concept(synset=best1, term=term1.get_head()[0])
+            con2 = concept.Concept(synset=best2, term=term2.get_head()[0])
 
             if len(term1.get_terms()) > 1:
-                conChild1 = concept.Concept(name=term1.get_terms(),term=term1.get_head()[0])
+                conChild1 = concept.Concept(name=term1.get_terms(), term=term1.get_head()[0])
                 con1.add_hyponym(conChild1)
-                conChild1.add_hypernym(con1) 
-                #m_concepts.append(conChild1)       
+                conChild1.add_hypernym(con1)
+                #m_concepts.append(conChild1)
             if len(term2.get_terms()) > 1:
-                conChild2 = concept.Concept(name=term2.get_terms(),term=term2.get_head()[0])
+                conChild2 = concept.Concept(name=term2.get_terms(), term=term2.get_head()[0])
                 con2.add_hyponym(conChild2)
                 conChild2.add_hypernym(con2)
-                #m_concepts.append(conChild2)  
-            
+                #m_concepts.append(conChild2)
+
             if conChild1:
                 if conChild2:
-                    conChild1.add_relation(conChild2,rel)
+                    conChild1.add_relation(conChild2, rel)
                 else:
-                    conChild1.add_relation(con2,rel)    
-                m_concepts.append(conChild1)    
+                    conChild1.add_relation(con2, rel)
+                m_concepts.append(conChild1)
             else:
                 if conChild2:
-                    con1.add_relation(conChild2,rel)
+                    con1.add_relation(conChild2, rel)
                     m_concepts.append(conChild2)
                 else:
-                    con1.add_relation(con2,rel)     
+                    con1.add_relation(con2, rel)
 
             s_concepts.append(con1)
             s_concepts.append(con2)

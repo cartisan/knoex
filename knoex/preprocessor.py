@@ -94,7 +94,6 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
         else:
             parser_out = os.popen(path_to_parser + "/lexparser.sh " + tmp_file).readlines()
 
-        print "parser_out: ", parser_out
         os.remove(tmp_file)
 
         # transform the stanford parse tree representation into nltk parse tree representation
@@ -122,9 +121,6 @@ def parse_sentence(sentence, parser='stanford', path_to_parser=None):
         parse_tree = Tree(parse_trees_text[0])
         print
         print 'PT0', parse_trees_text[0]
-        print
-        print 'PT1', parse_trees_text[1]
-        print
 	
     elif parser == 'berkeley' :
         
