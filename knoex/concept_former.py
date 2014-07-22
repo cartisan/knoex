@@ -221,7 +221,7 @@ class conceptFormer(object):
                 conChild1.add_hypernym(con1)
                 #m_concepts.append(conChild1)
             if len(term2.get_terms()) > 1:
-                conChild2 = self.concept(
+                conChild2 = self.get_concept(
                     concept.Concept(name=term2.get_terms(), term=term2.get_head()[0])
                 )
                 con2.add_hyponym(conChild2)

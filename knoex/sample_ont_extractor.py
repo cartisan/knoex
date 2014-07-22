@@ -7,8 +7,8 @@ import utils
 
 
 def small_text():
-    sentence1 = "The poisonous green snake lies on the ground."
-    sentence2 = "An elephant killes the snake."
+    sentence1 = "Travel kills time."
+    sentence2 = "France is a nice country."
     text = sentence1 + " " + sentence2
 
     term_extractor = C_NC_TermExtractor(text)
@@ -30,7 +30,7 @@ def small_text():
     print "no con.: " + str(len(concepts))
     print "no rel.: " + str(len(relations))
 
-    utils.dot_to_image(utils.taxonomy_to_dot(concepts, relations), 'snake')
+    utils.dot_to_image(utils.taxonomy_to_dot(concepts, relations), 'france')
 
 
 def long_text():
