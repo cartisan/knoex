@@ -1,0 +1,11 @@
+S | NP VP . | 0,to_verb,1 | 0
+S | NP VP | 0,to_verb,1 | 0
+
+VP | VBZ NP | 0,from_verb,1 | 0
+VP | VBD NP | 0,from_verb,1 | 0
+VP | VBZ NP PP | 0,from_verb,1; 2,property_of,0 | 0
+
+NP | DT NN || 1
+NP | DT JJ NN | 1,property_of,2 | 2
+NP | DT JJ JJ NN | 1,property_of,3; 2,property_of,3 | 2
+NP | JJ JJ NNS | 0,property_of,2; 1,property_of,2; | 2
