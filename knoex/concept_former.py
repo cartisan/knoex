@@ -196,6 +196,12 @@ class conceptFormer(object):
 
             synsets1 = wn.synsets(term1.get_head()[0], self.pos_tag(term1.get_head()[1]))
             synsets2 = wn.synsets(term2.get_head()[0], self.pos_tag(term2.get_head()[1]))
+
+            if not synsets1:
+                raise Exception("'{}' not found in WordNet".format(term1.get_head()[0]))
+            if not synsets2:
+                raise Exception("'{}' not found in WordNet".format(term2.get_head()[0]))
+
             (best1, best2) = self.comp(synsets1, synsets2)
 
             con1 = self.get_concept(
@@ -215,7 +221,7 @@ class conceptFormer(object):
                 conChild1.add_hypernym(con1)
                 #m_concepts.append(conChild1)
             if len(term2.get_terms()) > 1:
-                conChild2 = self.concept(
+                conChild2 = self.get_concept(
                     concept.Concept(name=term2.get_terms(), term=term2.get_head()[0])
                 )
                 con2.add_hyponym(conChild2)
@@ -242,10 +248,10 @@ class conceptFormer(object):
         self.multi_concepts = self.multi_concepts.union(set(m_concepts))
 
     def comp(self, synsets1, synsets2):
-        similarity = 0
+        similarity = -1
         for (try1,try2) in [(try1,try2) for try1 in synsets1 for try2 in synsets2]:
             newsimilarity = try1.path_similarity(try2)
-            if newsimilarity > similarity:
+            if newsimilarity >= similarity:
                 similarity = newsimilarity
                 best1 = try1
                 best2 = try2
