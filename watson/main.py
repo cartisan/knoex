@@ -6,16 +6,13 @@ from nltk.tree import Tree
 import dot_interface
 #import tree_patterns
 import configurations as conf
+from tree_patterns import TreePatternMatcher
 
 
-sent = ["My name is Johannes.", "I come from Bayern."]
+sent = ["My name is Johannes."]
 
 parser = StanfordParser(conf.stanford_parser,conf.stanford_models)
 trees = parser.raw_parse_sents(sent)
-
-a = str(trees[0][0])
-print a
-Tree.fromstring(a)
 
 for i,tree in enumerate(trees) :
     tree = tree[0]
@@ -23,6 +20,7 @@ for i,tree in enumerate(trees) :
     dot_interface.dot_to_image(dot_code, 'temp_tree_' + str(i))
     popen(conf.image_viewer + ' temp_tree_' + str(i) + '.png')
 
+    matcher = TreePatternMatcher('NP VP')
 
 
 
