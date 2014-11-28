@@ -94,10 +94,11 @@ class MatchTree : # ???? maybe inheret from ParentedTree
 
     def _construct_follower_dict(self):
         follower_dict = {}
-        follower_dict[None] = _get_followers(None)
+        follower_dict[None] = self._get_followers(None)
         follower_dict[self.work_tree.label()] = []
         for node in self.work_tree.subtrees() :
-            follower_dict[node.label()] = _get_followers(node)
+            print node.label()
+            follower_dict[node.label()] = self._get_followers(node)
         self.follower_dict = follower_dict
 
     def _get_followers(self, node):
@@ -115,7 +116,7 @@ class MatchTree : # ???? maybe inheret from ParentedTree
 
         # get line of first children
         followers = []
-        while isinstance(tmp_node,Tree) :
+        while list(tmp_node) !=  []:
             followers.append(tmp_node)
             tmp_node = tmp_node[0]
 
