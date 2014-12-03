@@ -80,14 +80,16 @@ def list_of_tripels_to_dot_fancy(tripel_list):
             node_shape_list.append(tripel[0] + ' [shape=diamond]')
             tripel_list[i] = (tripel[0],'',tripel[2])
         elif tripel[1] == 'property_of' :
+            node_shape_list.append(tripel[0] + ' [shape=oval]')
+        elif tripel[1] == 'modal' :
             node_shape_list.append(tripel[0] + ' [shape=egg]')
+        elif tripel[1] == 'possessive_of' :
+            node_shape_list.append(tripel[0] + ' [shape=oval]')
     
     for s in set(node_shape_list) :
         dot_code += s+'\n'
 
     dot_code += build_triple_code(tripel_list)
-
-    
 
     return dot_code + '}'
 

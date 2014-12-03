@@ -1,30 +1,84 @@
 # The idea is to have a language to match certain patterns in parse trees
 # and translate them to some kind of a semantic structure
 
+from copy import copy
+
 from nltk.tree import Tree, ParentedTree
 
+from configurations import tree_patterns_path
+
+def load_pattern_list():
+    with open(tree_patterns_path) as pattern_file:
+        pattern_list = pattern_file.readlines()
+
+    pattern_list = [line]
+
+    return pattern_list
 
 class TreePatternMatcher :
 
-    def __init__(self, pattern_list):
+    def __init__(self, pattern_list=None):
+
+        if pattern_list == None :
+            pattern_list = load_pattern_list()
 
         if type(pattern_list) in [str,unicode] :
             pattern_list = pattern_list.split('\n')
 
         pattern_list = [p.strip().split() for p in pattern_list]
 
-        self.pattern_list = pattern_list
+        self.pattern_list = [p.split('->') for p in pattern_list]
+
+        print pattern_list
 
 
-    def match_all_patterns(self, match_tree):
-        pass
+    def match_all(self, match_tree):
+        matches = []
+        for pattern in self.pattern_list :
+            matches += [self.match_pattern(pattern, match_tree)]
+        return matches        
+
 
     # matching has the find first 
-    def match_pattern(self, pattern, match_tree):
+    def match_pattern(self, pattern, match_tree, whole_sentence=False):
 
         pattern = self._transform_pattern(pattern)
         match_tree = self._transform_match_tree(match_tree)
-        starters = match_tree.follower_candidates()
+
+        if whole_sentence :
+            starters = self.work_tree.subtrees() + [self.work_tree]
+        else :
+            starters = match_tree.follower_dict[None]
+
+        current_match = [-1]*len(pattern)
+
+        def _match(nodes, index):
+
+            matches = []
+
+            for node in nodes :
+                # here it the comparing :
+                if pattern[index] != node.label() :
+                    continue
+
+                current_match[index] = node
+
+                followers = match_tree.follower_dict[node]
+
+                if index+1==len(pattern) :
+                    if whole_sentence and followers :
+                        continue
+                    matches += [copy(current_match)]
+
+                elif followers:
+                    matches += _match(followers, index+1)
+
+            return matches
+
+        matches = _match(starters, 0)
+
+        return matches
+
 
     def _transform_pattern(self, pattern):
 
@@ -40,10 +94,10 @@ class TreePatternMatcher :
 
     def _transform_match_tree(self, match_tree):
 
-        if type(match_tree) in [str,unicode,Tree] :
+        if isinstance(match_tree, (str,unicode,Tree)) :
             match_tree = MatchTree(match_tree)
-        elif type(match_tree) != MatchTree :
-            raise Exception('Type: ' + type(match_tree) + \
+        elif not isinstance(match_tree, MatchTree) :
+            raise Exception('Type: ' + str(type(match_tree)) + \
                 ' not convertable to MatchTree !')
 
         return match_tree
@@ -51,7 +105,7 @@ class TreePatternMatcher :
 
     
 
-class MatchTree : # ???? maybe inheret from ParentedTree
+class MatchTree :
 
     def __init__(self, tree_or_str):
 
@@ -60,11 +114,24 @@ class MatchTree : # ???? maybe inheret from ParentedTree
         else :
             self.original_tree = Tree.fromstring(tree_or_str)
 
-        self._construct_work_tree()
-        self._construct_label_dict()
-        self._construct_follower_dict()
+        self.work_tree = self._construct_work_tree()
+        self.label_dict = self._construct_label_dict()
+        self.follower_dict = self._construct_follower_dict()
 
-    def _construct_work_tree(self, add_label_numbers=False) :
+    @classmethod
+    def get_terminals(cls,node):
+
+        if len(node) == 0 :
+            return [node.label()]
+
+        terminals = []
+        for subnode in node.subtrees() :
+            if len(subnode) == 0 :
+                terminals.append(subnode.label())
+
+        return terminals
+
+    def _construct_work_tree(self) :
         # adds numbers to node 543
         work_tree = ParentedTree.convert(self.original_tree)
 
@@ -78,28 +145,26 @@ class MatchTree : # ???? maybe inheret from ParentedTree
 
         wrap_leaves(work_tree)
 
-        if add_label_numbers :
-            for i,node in enumerate(work_tree.subtrees()) :
-                label = node.label() + '-' + str(i)
-                node.set_label(label)
-
-        self.work_tree = work_tree
+        # freeze worktree to use as key in dict
+        return work_tree.freeze()
 
     def _construct_label_dict(self):
-        "returns a dict with node label as keys and subtrees as keys"
         label_dict = {}
         for node in self.work_tree.subtrees() :
-            label_dict[node.label()] = node
-        self.label_dict = label_dict
+            if node.label() in label_dict :
+                label_dict[node.label()].append(node)
+            else :
+                label_dict[node.label()] = [node]
+        return label_dict
 
     def _construct_follower_dict(self):
         follower_dict = {}
         follower_dict[None] = self._get_followers(None)
-        follower_dict[self.work_tree.label()] = []
+        follower_dict[self.work_tree] = []
         for node in self.work_tree.subtrees() :
-            print node.label()
-            follower_dict[node.label()] = self._get_followers(node)
-        self.follower_dict = follower_dict
+            #print node.label()
+            follower_dict[node] = self._get_followers(node)
+        return follower_dict
 
     def _get_followers(self, node):
 
@@ -119,21 +184,8 @@ class MatchTree : # ???? maybe inheret from ParentedTree
         while list(tmp_node) !=  []:
             followers.append(tmp_node)
             tmp_node = tmp_node[0]
+        followers.append(tmp_node)
 
         return followers
-
-    def find_all(self, label_pattern):
-
-        match_labeles = []
-        match_nodes = []
-
-        for label in label_dict :
-            # matching is rudimentary for now
-            # TODO: extend to regex
-            if label_pattern == label :
-                match_labeles.append(label)
-                match_nodes.append(label_dict[label])
-
-        return match_labeles, match_nodes
 
     

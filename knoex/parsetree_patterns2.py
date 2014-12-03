@@ -139,9 +139,10 @@ if __name__ == '__main__':
     parser = 'stanford'
     graph = []
     count = 0
+    s_old = 'Leon hits Kai.'
     s = raw_input('S [' + str(count) + ']: ')
     show = 2
-    while s != 'end':
+    while s not in ['end','quit']:
         if s == '':
             s = raw_input('S [' + str(count) + ']: ')
             continue
@@ -174,8 +175,10 @@ if __name__ == '__main__':
             continue
         if s == 'random':
             s = get_wiki_text()
-        else :
-            print "====================================================================="
+        if s == 'last':
+            s = s_old
+
+        print "====================================================================="
 
         pattern_dict = load_pattern_list()
 
@@ -195,9 +198,9 @@ if __name__ == '__main__':
             
             path = utils.get_knoex_path()
             dot_code = utils.nltk_tree_to_dot(tree)
-            utils.dot_to_image(dot_code, 'temptree_'+str(count))
+            utils.dot_to_image(dot_code, 'temptree')
             if show == 2:
-                os.popen('gnome-open ' + 'temptree_'+str(count)+'.png')
+                os.popen('gnome-open ' + 'temptree.png')
 
             g,_ = match_tree(tree, pattern_dict)
             graph += g
@@ -211,6 +214,7 @@ if __name__ == '__main__':
 
         if show :
             os.popen('gnome-open ' + 'tempgraph.png')
+        s_old = s
         s = raw_input('S [' + str(count) + ']: ')
 
 
