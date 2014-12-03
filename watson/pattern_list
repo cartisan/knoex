@@ -1,7 +1,11 @@
-NN -> none 
-What is DT NN -> wordnet:NN
-What is NN -> wordnet:NN
-Who is DT NN -> wordnet:NN
-Who is DT NN -> wordnet:NN
-Where is DT NN -> none
-Where is NN -> none
+what is DT NN -> wordnet:NN
+what is NN -> wordnet:NN
+what is DT NNS -> wordnet:NNS
+what is NNS -> wordnet:NNS
+what are NNS -> wordnet:NNS
+what are DT NNS -> wordnet:NNS
+who is DT NN -> wordnet:NN
+who is DT NN -> wordnet:NN
+who is NN -> wordnet:NN
+where is DT NN -> none
+where is NN -> none

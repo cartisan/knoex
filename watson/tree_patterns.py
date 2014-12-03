@@ -28,9 +28,9 @@ class TreePatternMatcher :
     def __init__(self):
         pattern_list, semantic_tranlations = load_pattern_list()
         self.pattern_list = pattern_list
-        self. semantic_tranlations = semantic_tranlations
+        self.semantic_tranlations = semantic_tranlations
 
-        semantic_map = {'dbpedia' : res.get_dbpedia,
+        self.function_dict = {'dbpedia' : res.get_dbpedia,
                         'wordnet' : res.get_wordnet_definition }
 
     def match_all(self, match_tree):
@@ -81,16 +81,44 @@ class TreePatternMatcher :
 
         return matches
 
-    def match_to_semantics(pattern, match, semantic):
-        semantic = semantic.split()
-        sem_func, sem_args = zip(*[s.spli() for s in semantic])
+
+    def semantics_all(self, all_matches,silent=True):
+
+        answers = []
+
+        for i,matches in enumerate(all_matches):
+            s = self.semantic_tranlations[i]
+            if s[0] in ['none','None'] :
+                if not silent: print 'Empty semantic!'
+                continue
+            p = self.pattern_list[i]
+            for m in matches :
+                answers += self.match_to_semantics(p,m,s)
+        return answers
+
+
+    def match_to_semantics(self, pattern, match, semantic):
+
+        output = []
+
+        match_labels = [m.label() for m in match]
+        match_terminals = [" ".join(MatchTree.get_terminals(m)) for m in match]
+        #print
+        #print 'match_labels', match_labels
+        #print 'match_terminals', match_terminals
+        #print semantic
+        sem_func, sem_args = zip(*[s.split(':') for s in semantic])
         sem_args = [a.split(',') for a in sem_args]
         
+        #print 'sem_func', sem_func
+        #print 'sem_args', sem_args
 
-        #for p,m in zip(pattern, match) :
+        for func,args in zip(sem_func,sem_args) :
+            arg_terminals = [ match_terminals[match_labels.index(a)] for a in args]
+            #print 'arg_terminals', arg_terminals
+            output += [self.function_dict[func](*arg_terminals)]
 
-
-
+        return output
 
 
     def _transform_pattern(self, pattern):
