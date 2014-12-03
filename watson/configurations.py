@@ -7,6 +7,8 @@ stanford_models = stanford_path + '/' + 'stanford-parser-3.4.1-models.jar'
 
 tree_patterns_path =  watson_path + '/' + 'pattern_list'
 
+pattern_semantic_separator = '->'
+
 image_viewer = 'gnome-open'
 
 del abspath, dirname

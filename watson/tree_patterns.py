@@ -5,50 +5,52 @@ from copy import copy
 
 from nltk.tree import Tree, ParentedTree
 
-from configurations import tree_patterns_path
+from configurations import tree_patterns_path, pattern_semantic_separator
+import recources as res
+
 
 def load_pattern_list():
+
     with open(tree_patterns_path) as pattern_file:
         pattern_list = pattern_file.readlines()
+    #maybe just use for instead of list_comprehentions
+    pattern_list = [line.split(pattern_semantic_separator) for line in pattern_list]
 
-    pattern_list = [line]
+    pattern_list = [[pair[0].strip().split(),pair[1].strip().split()] for pair in pattern_list]
 
-    return pattern_list
+    patterns, semantic_tranlations = zip(*pattern_list)
+
+    return patterns, semantic_tranlations
+
 
 class TreePatternMatcher :
 
-    def __init__(self, pattern_list=None):
+    def __init__(self):
+        pattern_list, semantic_tranlations = load_pattern_list()
+        self.pattern_list = pattern_list
+        self. semantic_tranlations = semantic_tranlations
 
-        if pattern_list == None :
-            pattern_list = load_pattern_list()
-
-        if type(pattern_list) in [str,unicode] :
-            pattern_list = pattern_list.split('\n')
-
-        pattern_list = [p.strip().split() for p in pattern_list]
-
-        self.pattern_list = [p.split('->') for p in pattern_list]
-
-        print pattern_list
-
+        semantic_map = {'dbpedia' : res.get_dbpedia,
+                        'wordnet' : res.get_wordnet_definition }
 
     def match_all(self, match_tree):
+        match_tree = self._transform_match_tree(match_tree)
         matches = []
         for pattern in self.pattern_list :
+            #print pattern
+            #print match_tree.work_tree.pprint().replace(' ','').replace('\n',' ')
             matches += [self.match_pattern(pattern, match_tree)]
         return matches        
-
 
     # matching has the find first 
     def match_pattern(self, pattern, match_tree, whole_sentence=False):
 
         pattern = self._transform_pattern(pattern)
-        match_tree = self._transform_match_tree(match_tree)
 
         if whole_sentence :
-            starters = self.work_tree.subtrees() + [self.work_tree]
-        else :
             starters = match_tree.follower_dict[None]
+        else :
+            starters = match_tree.get_all_nodes()
 
         current_match = [-1]*len(pattern)
 
@@ -57,7 +59,7 @@ class TreePatternMatcher :
             matches = []
 
             for node in nodes :
-                # here it the comparing :
+                # here is the actual comparison :
                 if pattern[index] != node.label() :
                     continue
 
@@ -78,6 +80,17 @@ class TreePatternMatcher :
         matches = _match(starters, 0)
 
         return matches
+
+    def match_to_semantics(pattern, match, semantic):
+        semantic = semantic.split()
+        sem_func, sem_args = zip(*[s.spli() for s in semantic])
+        sem_args = [a.split(',') for a in sem_args]
+        
+
+        #for p,m in zip(pattern, match) :
+
+
+
 
 
     def _transform_pattern(self, pattern):
@@ -130,6 +143,9 @@ class MatchTree :
                 terminals.append(subnode.label())
 
         return terminals
+
+    def get_all_nodes(self):
+        return list(self.work_tree.subtrees()) + [self.work_tree]
 
     def _construct_work_tree(self) :
         # adds numbers to node 543
