@@ -10,10 +10,16 @@ import dot_interface
 #import tree_patterns
 import configurations as conf
 from tree_patterns import TreePatternMatcher, MatchTree, load_pattern_list
-from utils import text_to_speech, print_constituent_tags
+from utils_2 import lemma, ner, stem
+
+
+speech = False
+
+if speech : from utils import text_to_speech
 
 silent = True
 max_answer_number = 5
+
 speaker = 'google'
 
 def answer_question(sent) :
@@ -55,7 +61,7 @@ def answer_question(sent) :
         if not reduce(lambda x,y : x or y,all_matches) :
             no_match = "Could not match any patterns."
             print no_match
-            text_to_speech(no_match,speaker)
+            if speech : text_to_speech(no_match,speaker)
             return
 
         answers = matcher.semantics_all(all_matches)
@@ -67,39 +73,53 @@ def answer_question(sent) :
         if len(answers) == 0:
             sorry = "Sorry but I can't find any answers!"
             print sorry
-            text_to_speech(sorry,speaker)
+            if speech : text_to_speech(sorry,speaker)
             return
 
         print answers[0]
         sleep(1)
         for c in answers[0].split(';') :
-            text_to_speech(c,speaker)
+            if speech : text_to_speech(c,speaker)
 
         for i,a in enumerate(answers[1:]) :
             if i+1 == max_answer_number :
                 break
             sleep(1)
-            text_to_speech('or','espeak')
+            if speech : text_to_speech('or','espeak')
             print a
             sleep(1)
             for c in a.split(';') :
-                text_to_speech(c,speaker)
+                if speech : text_to_speech(c,speaker)
 
 
 def qa_loop():
 
     while True :
-        sent = raw_input('Enter question: ')
+        sent = raw_input('>> ')
+        sent = sent.strip()
         if sent == 'exit':
             break
-        elif sent == 'tags' :
-            print_constituent_tags()
-        else:
-            sent = [sent]
+        elif sent.startswith('lemma ') :
+            for word in [lemma(word) for word in sent.split()[1:]] :
+                print word
+        elif sent.startswith('ner ') :
+            sent = sent[4:]
+            print ner(sent)
+        elif sent.startswith('stem ') :
+            for word in [stem(word) for word in sent.split()[1:]] :
+                print word
+        elif sent.startswith('parse ') :
+            #sent = [sent[6:]]
+            #answer_question(sent)
+            pass
+        elif sent.startswith('q ') :
+            sent = [sent[2:]]
             answer_question(sent)
+        else :
+            'Well, ... I dont know what to do !'
     bye_phrase = choice(['Good bye!','auf wiedersehn.','good night','bye bye','it was nice meeting you.','see you soon.','thank you for using knoex.','au revoir'])
     print bye_phrase
-    text_to_speech(bye_phrase)
+    if speech : text_to_speech(bye_phrase)
 
 
 if __name__ == '__main__':
