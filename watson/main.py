@@ -13,7 +13,7 @@ from tree_patterns import TreePatternMatcher, MatchTree, load_pattern_list
 from utils import text_to_speech, print_constituent_tags
 
 silent = True
-max_answer_number = 5
+max_answer_number = 2 
 speaker = 'google'
 
 def answer_question(sent) :
