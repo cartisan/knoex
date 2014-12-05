@@ -1,3 +1,4 @@
+what is the birthday of NNP -> dbpedia:NNP,birthDate
 what is DT NN -> wordnet:NN
 what is NN -> wordnet:NN
 what is DT NNS -> wordnet:NNS
@@ -7,5 +8,3 @@ what are DT NNS -> wordnet:NNS
 who is DT NN -> wordnet:NN
 who is DT NN -> wordnet:NN
 who is NN -> wordnet:NN
-where is DT NN -> none
-where is NN -> none

@@ -30,16 +30,16 @@ class TreePatternMatcher :
         self.pattern_list = pattern_list
         self.semantic_tranlations = semantic_tranlations
 
-        self.function_dict = {'dbpedia' : res.get_dbpedia,
+        self.function_dict = {'dbpedia' : res.dbpedia_wrapper,
                         'wordnet' : res.get_wordnet_definition }
 
-    def match_all(self, match_tree):
+    def match_all(self, match_tree, whole_sentence):
         match_tree = self._transform_match_tree(match_tree)
         matches = []
         for pattern in self.pattern_list :
             #print pattern
             #print match_tree.work_tree.pprint().replace(' ','').replace('\n',' ')
-            matches += [self.match_pattern(pattern, match_tree)]
+            matches += [self.match_pattern(pattern, match_tree, whole_sentence)]
         return matches        
 
     # matching has the find first 
@@ -114,7 +114,14 @@ class TreePatternMatcher :
         #print 'sem_args', sem_args
 
         for func,args in zip(sem_func,sem_args) :
-            arg_terminals = [ match_terminals[match_labels.index(a)] for a in args]
+            arg_terminals = []
+            for a in args :
+                if a in match_labels :
+                    arg = match_terminals[match_labels.index(a)]
+                else :
+                    arg = a
+                arg_terminals.append(arg)
+            
             #print 'arg_terminals', arg_terminals
             output += [self.function_dict[func](*arg_terminals)]
 

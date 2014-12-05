@@ -18,6 +18,15 @@ def get_dbpedia(topics, subject_object) :
     return [str(r[1]) for r in results]
 
 
+def dbpedia_wrapper(topics, subject_object):
+    #print 'called dbpedia with', topics, subject_object
+    if type(topics) not in [list,tuple] :
+        topics = [topics]
+    results = get_dbpedia(topics, subject_object)
+    #print 'results', results
+    return ['The ' + subject_object + ' of ' + ', '.join(topics).replace('_',' ') + ' is ' + r for r in results]
+
+
 def get_wiki_text(name=None, lang='simple', summary=True, silent=False):
     wiki.set_lang(lang)
     try :
