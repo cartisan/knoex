@@ -1,5 +1,10 @@
 import os
 
+from nltk.tree import Tree
+from utils import parse
+
+import configurations as conf
+
 def nltk_tree_to_dot(tree) :
     
     dot_code = 'digraph graphname {\n'
@@ -87,3 +92,20 @@ def dot_to_image(dot_code, name) :
     f.close()
     os.popen('dot temp.dot -Tpng -o' + name + '.png')
     os.remove('temp.dot')
+
+
+# parses a sentence and draws a tree / accepts also directly accepts parsetrees
+def draw_parsetree(arg, cut_root_node=True):
+    
+    if isinstance(arg,(str,unicode)):
+        arg = parse(arg)
+    if isinstance(arg, Tree):
+        arg = [arg]
+    
+    for i,tree in enumerate(arg) :
+        if cut_root_node : tree = tree[0]
+        png_path = 'temp_tree_' + str(i) + '.png'
+        dot_code = nltk_tree_to_dot(tree)
+        dot_to_image(dot_code, 'temp_tree_' + str(i))
+        os.popen(conf.image_viewer + ' ' + png_path)
+
