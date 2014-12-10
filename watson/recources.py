@@ -1,6 +1,7 @@
 from nltk.corpus import wordnet as wn
 from rdflib import Graph, URIRef
 import wikipedia as wiki
+import httplib
 
 
 def get_wordnet_definition(word):
@@ -27,23 +28,24 @@ def dbpedia_wrapper(topics, subject_object):
     return ['The ' + subject_object + ' of ' + ', '.join(topics).replace('_',' ') + ' is ' + r for r in results]
 
 
-def get_wiki_text(name=None, lang='simple', summary=True, silent=False):
+def get_wikipedia_text(keywords=None, lang='simple', summary=True, silent=False):
     wiki.set_lang(lang)
-    try :
-        if not name :
-            name = wiki.random()
+    if type(keywords) in [str,unicode]:
+        keywords = [keywords]
+    articles = []
+    for name in keywords :
+        try :
+            if not name :
+                name = wiki.random()
+                if not silent :
+                    print name
+            if summary :
+                t = wiki.summary(name)
+            else :
+                t = wiki.page(name).content
+        except Exception, e:
+            t = ''
             if not silent :
-                print name
-        if summary :
-            t = wiki.summary(name)
-        else :
-            t = wiki.page(name).content
-    except Exception, e:
-        t = ''
-        if not silent :
-            print e
-    return t
-
-
-if __name__ == '__main__' :
-    pass
+                print e
+        articles += [t]
+    return articles

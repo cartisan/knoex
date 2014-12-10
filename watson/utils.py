@@ -5,12 +5,14 @@ import nltk
 from nltk.parse.stanford import StanfordParser
 from nltk.stem.porter import PorterStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
-from nltk.tag.stanford import NERTagger
+from nltk.tag.stanford import NERTagger, POSTagger
 
 
 import configurations as conf
 
 parser = StanfordParser(conf.stanford_parser,conf.stanford_models)
+stanford_postagger = POSTagger(conf.stanford_pos_model, path_to_jar=conf.stanford_postagger, encoding='UTF-8')
+ner_tagger = NERTagger(conf.stanford_ner_classifier, conf.stanford_ner)
 
 def parse(text, normalize=True) :
     """Parses string, iterable of strings or nested iterables of strings"""
@@ -21,9 +23,9 @@ def parse(text, normalize=True) :
         trees = parser.raw_parse(text)
     return trees
 
+
 def text_to_speech(text, engine='google'):
     if engine == 'google' :
-
         text = text.replace('(',' ')
         text = text.replace(')',' ')
         text = text.replace('`','')
@@ -37,15 +39,33 @@ def text_to_speech(text, engine='google'):
         print text 
 
 
-def pos_tag(sent):
-    tokens = nltk.word_tokenize(sent)
-    return nltk.pos_tag(tokens)
+def pos_tag(sent, tagger='stanford'):
+    if tagger == 'nltk' :
+        tokens = nltk.word_tokenize(sent)
+        return nltk.pos_tag(tokens)
+    elif tagger == 'stanford' :
+        tokens = tokenize(sent)
+        return stanford_postagger.tag(tokens)
+    else :
+        raise ValueError('No such tagger: ' + tagger)
 
 
-def named_entity_recognition(sent) :
-    st = NERTagger(conf.stanford_ner_classifier, conf.stanford_ner)
-    return st.tag(sent.split())
+def named_entity_recognition(sent, silent=True) :
+    if type(sent) in [str,unicode]:
+        sent = nltk.word_tokenize(sent)
+    tagged = ner_tagger.tag(sent)
+    if not silent :
+        print 'ner-tags:',tagged
+    return tagged
 
+def normalize(text) :
+    tokens = tokenize(text)
+    # 3) convert numbers
+    # 4) remove none ascii characters
+    # 5) text canonicalization
+    # 6) remove stop words (to common words)
+
+#def remove_brackets
 
 def lemmatize(word):
     #if type(word) in [str,unicode] :
@@ -61,28 +81,43 @@ def stem(word) :
     stemmer = PorterStemmer()
     return [stemmer.stem(w) for w in word]
 
-def tokenize(arg, prune=True):
+
+def tokenize(arg):
+
     if not hasattr(arg, '__iter__') :
         arg = nltk.sent_tokenize(arg)
+
     list_of_wordlists = [nltk.word_tokenize(sent) for sent in arg]
-    if prune and len(list_of_wordlists) == 1:
-        list_of_wordlists = list_of_wordlists[0]
+
     return list_of_wordlists
+
 
 def untokenize(tokens) :
     if tokens and hasattr(tokens[0], '__iter__') :
         return [untokenize(t) for t in tokens]
     return "".join([" "+i if not i.startswith("'") and i not in punctuation else i for i in tokens]).strip()
 
-def resolve_abb(text):
 
-    words = text.strip().split()
+def canonicalize(words):
+
+    if type(words) in [str, unicode] :
+        words = words.strip().split()
+        was_string = True
+    else :
+        was_string = False
 
     for i,word in enumerate(words) :
         if word in _transform_dict :
             words[i] = _transform_dict[word]
+            print word
+        elif word in _abbreviations :
+            words[i] = _abbreviations[word]
+            print word
     #flatten list : [item for sublist in l for item in sublist]
-    return untokenize(words)
+    if was_string :
+        return untokenize(words)
+    else :
+        return words
 
 _transform_dict = {
     
@@ -126,6 +161,10 @@ _transform_dict = {
     "wanna" : "want to",
     "gonna" : "going to"
 
+}
+
+_abbreviations = {
+    'U.S.A.' : 'USA'
 }
 
 
@@ -177,3 +216,8 @@ _arithmetic_dict = {
 
 ner = named_entity_recognition
 lemma = lemmatize
+
+"""def flatten(nested_list):
+    for i,item in enumerate(nested_list):
+        if hasattr(item, '__iter__') :
+            flatten"""
