@@ -19,7 +19,7 @@ def parse(text, normalize=True) :
     if hasattr(text, '__iter__') :
         return [parse(t) for t in text]
     else :
-        if normalize : text = resolve_abb(text)
+        if normalize : text = canonicalize(text)
         trees = parser.raw_parse(text)
     return trees
 
